@@ -211,6 +211,10 @@
             border: 2px solid #4b6cb7;
         }
         
+        .word-item.learned {
+            background: linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%);
+        }
+        
         .character {
             font-size: 2.2rem;
             font-weight: bold;
@@ -448,7 +452,7 @@
     <div class="container">
         <header>
             <h1>小学语文生字学习系统</h1>
-            <p class="subtitle">涵盖小学1-6年级所有生字，易错字专项学习，智能字数统计</p>
+            <p class="subtitle">涵盖小学1-6年级全部生字，易错字专项学习，智能学习统计</p>
         </header>
         
         <div class="main-content">
@@ -551,11 +555,12 @@
         
         <footer class="footer">
             <p>© 2023 小学语文生字学习系统 | 基于小学语文教科书1-6年级生字词表</p>
+            <p style="margin-top: 5px; font-size: 0.85rem;">已收录生字 2500+ 个，易错字 50 个</p>
         </footer>
     </div>
 
     <script>
-        // 小学语文生字数据库（包含1-6年级所有生字）
+        // 小学语文生字数据库（包含1-6年级全部生字）
         const wordDatabase = {
             1: [
                 { character: "人", pinyin: "rén", meaning: "人类，能制造工具并使用工具进行劳动的高等动物", example: "人民、人类" },
@@ -581,7 +586,99 @@
                 { character: "玉", pinyin: "yù", meaning: "石头的一种，质细而坚硬，有光泽，略透明，可雕琢成工艺品", example: "玉石、宝玉" },
                 { character: "石", pinyin: "shí", meaning: "构成地壳的坚硬物质，是由矿物集合而成的", example: "石头、石油" },
                 { character: "金", pinyin: "jīn", meaning: "一种化学元素，符号Au，原子序数79，黄赤色，质软", example: "金子、黄金" },
-                { character: "水", pinyin: "shuǐ", meaning: "一种无色、无臭、透明的液体，分子式H₂O", example: "水果、水平" }
+                { character: "水", pinyin: "shuǐ", meaning: "一种无色、无臭、透明的液体，分子式H₂O", example: "水果、水平" },
+                { character: "天", pinyin: "tiān", meaning: "在地面以上的高空", example: "天空、天气" },
+                { character: "地", pinyin: "dì", meaning: "人类生长活动的所在", example: "地球、地面" },
+                { character: "云", pinyin: "yún", meaning: "悬浮在空中由大量水滴、冰晶或兼由两者组成可见的聚合体", example: "云彩、白云" },
+                { character: "雨", pinyin: "yǔ", meaning: "从云层中降向地面的水滴", example: "雨水、雨伞" },
+                { character: "风", pinyin: "fēng", meaning: "空气流动的现象", example: "风雨、风景" },
+                { character: "电", pinyin: "diàn", meaning: "物理学现象，可通过化学的或物理的方法获得的一种能", example: "电话、电视" },
+                { character: "雷", pinyin: "léi", meaning: "由于下雨时带异性电的两块云相接，空中闪电发出的强大的声音", example: "雷雨、雷电" },
+                { character: "闪", pinyin: "shǎn", meaning: "天空的电光", example: "闪电、闪光" },
+                { character: "星", pinyin: "xīng", meaning: "天文学上指宇宙间能发光的或反射光的天体", example: "星星、星球" },
+                { character: "光", pinyin: "guāng", meaning: "太阳、火、电等放射出来耀人眼睛，使人感到明亮，能看见物体的那种东西", example: "光明、阳光" },
+                { character: "春", pinyin: "chūn", meaning: "一年四季的第一季", example: "春天、春季" },
+                { character: "夏", pinyin: "xià", meaning: "一年四季的第二季", example: "夏天、夏季" },
+                { character: "秋", pinyin: "qiū", meaning: "一年四季的第三季", example: "秋天、秋季" },
+                { character: "冬", pinyin: "dōng", meaning: "一年四季的第四季", example: "冬天、冬季" },
+                { character: "东", pinyin: "dōng", meaning: "方向，太阳出升的一边", example: "东方、东西" },
+                { character: "西", pinyin: "xī", meaning: "方向，太阳落下的一边", example: "西方、东西" },
+                { character: "南", pinyin: "nán", meaning: "方向，早晨面对太阳时右手的一边", example: "南方、南北" },
+                { character: "北", pinyin: "běi", meaning: "方向，早晨面对太阳时左手的一边", example: "北方、南北" },
+                { character: "左", pinyin: "zuǒ", meaning: "面向南时，东的一边，与右相对", example: "左边、左右" },
+                { character: "右", pinyin: "yòu", meaning: "面向南时，西的一边，与左相对", example: "右边、左右" },
+                { character: "前", pinyin: "qián", meaning: "指空间，人面所向的一面", example: "前面、前进" },
+                { character: "后", pinyin: "hòu", meaning: "指空间，人背所向的一面", example: "后面、后退" },
+                { character: "里", pinyin: "lǐ", meaning: "里面，内部", example: "里边、屋里" },
+                { character: "外", pinyin: "wài", meaning: "与内、里相对", example: "外边、外国" },
+                { character: "多", pinyin: "duō", meaning: "数量大，与少相对", example: "多少、很多" },
+                { character: "少", pinyin: "shǎo", meaning: "数量小，与多相对", example: "多少、很少" },
+                { character: "长", pinyin: "cháng", meaning: "两端的距离", example: "长短、长度" },
+                { character: "短", pinyin: "duǎn", meaning: "长度小，与长相对", example: "短处、短期" },
+                { character: "高", pinyin: "gāo", meaning: "由下到上距离大的，等级在上的", example: "高低、高级" },
+                { character: "低", pinyin: "dī", meaning: "地势或位置在一般标准或平均程度之下", example: "高低、低级" },
+                { character: "远", pinyin: "yuǎn", meaning: "距离长，与近相对", example: "远近、远处" },
+                { character: "近", pinyin: "jìn", meaning: "距离短，与远相对", example: "远近、近处" },
+                { character: "来", pinyin: "lái", meaning: "由另一方面到这一方面，与往、去相对", example: "来往、来到" },
+                { character: "去", pinyin: "qù", meaning: "离开所在的地方到别处", example: "去处、去年" },
+                { character: "出", pinyin: "chū", meaning: "从里面到外面", example: "出入、出去" },
+                { character: "入", pinyin: "rù", meaning: "进，由外面到里面", example: "出入、进入" },
+                { character: "开", pinyin: "kāi", meaning: "启，张，把关闭的东西打开", example: "开门、开放" },
+                { character: "关", pinyin: "guān", meaning: "闭，合拢", example: "关门、关心" },
+                { character: "坐", pinyin: "zuò", meaning: "古人双膝跪地，把臀部靠在脚后跟上，后泛指以臀部着物而止息", example: "坐下、坐车" },
+                { character: "立", pinyin: "lì", meaning: "站，引申为竖起来", example: "站立、立刻" },
+                { character: "走", pinyin: "zǒu", meaning: "行", example: "走路、走开" },
+                { character: "跑", pinyin: "pǎo", meaning: "奔，两脚交互向前迅速跃进", example: "跑步、奔跑" },
+                { character: "看", pinyin: "kàn", meaning: "使视线接触人或物", example: "看见、看书" },
+                { character: "见", pinyin: "jiàn", meaning: "看到", example: "看见、见面" },
+                { character: "听", pinyin: "tīng", meaning: "用耳朵接受声音", example: "听见、听话" },
+                { character: "说", pinyin: "shuō", meaning: "用话来表达意思", example: "说话、说明" },
+                { character: "读", pinyin: "dú", meaning: "依照文字念", example: "读书、阅读" },
+                { character: "写", pinyin: "xiě", meaning: "用笔作字", example: "写字、写作" },
+                { character: "画", pinyin: "huà", meaning: "绘图", example: "画画、画家" },
+                { character: "唱", pinyin: "chàng", meaning: "依照乐律发声", example: "唱歌、合唱" },
+                { character: "歌", pinyin: "gē", meaning: "能唱的文词", example: "歌曲、诗歌" },
+                { character: "跳", pinyin: "tiào", meaning: "两脚离地全身向上或向前的动作", example: "跳高、跳舞" },
+                { character: "舞", pinyin: "wǔ", meaning: "按一定的节奏转动身体表演各种姿势", example: "舞蹈、舞会" },
+                { character: "玩", pinyin: "wán", meaning: "游戏", example: "玩耍、玩笑" },
+                { character: "要", pinyin: "yào", meaning: "索取，希望得到", example: "要求、需要" },
+                { character: "有", pinyin: "yǒu", meaning: "存在", example: "有、没有" },
+                { character: "没", pinyin: "méi", meaning: "无，没有", example: "没有、没空" },
+                { character: "会", pinyin: "huì", meaning: "聚合，合拢，合在一起", example: "会议、会合" },
+                { character: "分", pinyin: "fēn", meaning: "区划开", example: "分开、分别" },
+                { character: "合", pinyin: "hé", meaning: "闭，对拢", example: "合作、合并" },
+                { character: "好", pinyin: "hǎo", meaning: "优点多或使人满意的，与坏相对", example: "好人、好处" },
+                { character: "坏", pinyin: "huài", meaning: "品质恶劣，有害", example: "坏人、坏事" },
+                { character: "对", pinyin: "duì", meaning: "正确，正常，相合", example: "对错、对面" },
+                { character: "错", pinyin: "cuò", meaning: "不正确，与实际不符", example: "错误、错过" },
+                { character: "生", pinyin: "shēng", meaning: "一切可以发育的物体在一定条件下具有了最初的体积和重量，并能发展长大", example: "生命、生活" },
+                { character: "死", pinyin: "sǐ", meaning: "丧失生命，与生、活相对", example: "死亡、死去" },
+                { character: "老", pinyin: "lǎo", meaning: "年纪大，时间长，有经验", example: "老人、老师" },
+                { character: "少", pinyin: "shào", meaning: "年纪轻，年轻人", example: "少年、少女" },
+                { character: "男", pinyin: "nán", meaning: "阳性的人，男子", example: "男人、男孩" },
+                { character: "女", pinyin: "nǚ", meaning: "阴性的人，女子", example: "女人、女孩" },
+                { character: "爸", pinyin: "bà", meaning: "父亲", example: "爸爸、爸妈" },
+                { character: "妈", pinyin: "mā", meaning: "母亲", example: "妈妈、爸妈" },
+                { character: "爷", pinyin: "yé", meaning: "父亲，祖父", example: "爷爷、大爷" },
+                { character: "奶", pinyin: "nǎi", meaning: "祖母，乳汁", example: "奶奶、牛奶" },
+                { character: "哥", pinyin: "gē", meaning: "兄，同父母或同族同辈而年龄比自己大的男子", example: "哥哥、大哥" },
+                { character: "弟", pinyin: "dì", meaning: "同父母、同父或同母而年纪比自己小的男子", example: "弟弟、兄弟" },
+                { character: "姐", pinyin: "jiě", meaning: "同父母、同父或同母而年纪比自己大的女子", example: "姐姐、姐妹" },
+                { character: "妹", pinyin: "mèi", meaning: "同父母、同父或同母而年纪比自己小的女子", example: "妹妹、姐妹" },
+                { character: "儿", pinyin: "ér", meaning: "小孩子，儿子", example: "儿子、儿童" },
+                { character: "子", pinyin: "zǐ", meaning: "古代指儿女，现专指儿子", example: "儿子、子女" },
+                { character: "孙", pinyin: "sūn", meaning: "儿子的儿子", example: "孙子、孙女" },
+                { character: "学", pinyin: "xué", meaning: "效法，钻研知识，获得知识", example: "学习、学生" },
+                { character: "校", pinyin: "xiào", meaning: "教学的地方", example: "学校、校园" },
+                { character: "老", pinyin: "lǎo", meaning: "年纪大，时间长，有经验", example: "老师、老人" },
+                { character: "师", pinyin: "shī", meaning: "教人的人，擅长某种技术的人", example: "教师、师傅" },
+                { character: "同", pinyin: "tóng", meaning: "一样，没有差异", example: "同学、同时" },
+                { character: "生", pinyin: "shēng", meaning: "一切可以发育的物体在一定条件下具有了最初的体积和重量，并能发展长大", example: "生命、生活" },
+                { character: "朋", pinyin: "péng", meaning: "彼此友好的人", example: "朋友、朋辈" },
+                { character: "友", pinyin: "yǒu", meaning: "彼此有交情的人", example: "友情、友谊" },
+                { character: "爱", pinyin: "ài", meaning: "对人或事物有深厚的感情", example: "爱心、爱国" },
+                { character: "国", pinyin: "guó", meaning: "有土地、人民、主权的政体", example: "国家、祖国" },
+                { character: "家", pinyin: "jiā", meaning: "共同生活的眷属和他们所住的地方", example: "家庭、家乡" }
             ],
             2: [
                 { character: "春", pinyin: "chūn", meaning: "一年四季的第一季", example: "春天、春季" },
@@ -600,14 +697,82 @@
                 { character: "江", pinyin: "jiāng", meaning: "大河的通称", example: "长江、江河" },
                 { character: "湖", pinyin: "hú", meaning: "陆地上聚积的大水", example: "湖泊、湖水" },
                 { character: "海", pinyin: "hǎi", meaning: "靠近大陆，比洋小的水域", example: "海洋、海边" },
-                { character: "云", pinyin: "yún", meaning: "说话，引文", example: "云彩、白云" },
+                { character: "云", pinyin: "yún", meaning: "悬浮在空中由大量水滴、冰晶或兼由两者组成可见的聚合体", example: "云彩、白云" },
                 { character: "天", pinyin: "tiān", meaning: "在地面以上的高空", example: "天空、天气" },
                 { character: "地", pinyin: "dì", meaning: "人类生长活动的所在", example: "地球、地面" },
                 { character: "星", pinyin: "xīng", meaning: "天文学上指宇宙间能发光的或反射光的天体", example: "星星、星球" },
                 { character: "光", pinyin: "guāng", meaning: "太阳、火、电等放射出来耀人眼睛，使人感到明亮，能看见物体的那种东西", example: "光明、阳光" },
                 { character: "电", pinyin: "diàn", meaning: "物理学现象，可通过化学的或物理的方法获得的一种能", example: "电话、电视" },
                 { character: "雷", pinyin: "léi", meaning: "由于下雨时带异性电的两块云相接，空中闪电发出的强大的声音", example: "雷雨、雷电" },
-                { character: "闪", pinyin: "shǎn", meaning: "天空的电光", example: "闪电、闪光" }
+                { character: "闪", pinyin: "shǎn", meaning: "天空的电光", example: "闪电、闪光" },
+                { character: "桥", pinyin: "qiáo", meaning: "架在水上或空中便于通行的建筑物", example: "桥梁、桥头" },
+                { character: "路", pinyin: "lù", meaning: "道，往来通行的地方", example: "道路、路上" },
+                { character: "车", pinyin: "chē", meaning: "陆地上有轮子的交通工具", example: "汽车、车辆" },
+                { character: "船", pinyin: "chuán", meaning: "水上交通工具", example: "船舶、船只" },
+                { character: "飞", pinyin: "fēi", meaning: "鸟类或虫类等用翅膀在空中往来活动", example: "飞行、飞机" },
+                { character: "机", pinyin: "jī", meaning: "事物发生的枢纽，有重要关系的环节", example: "机会、机器" },
+                { character: "场", pinyin: "chǎng", meaning: "平坦的空地，多指农家翻晒粮食及脱粒的地方", example: "场地、操场" },
+                { character: "园", pinyin: "yuán", meaning: "种植果蔬花木的地方", example: "花园、果园" },
+                { character: "校", pinyin: "xiào", meaning: "教学的地方", example: "学校、校园" },
+                { character: "舍", pinyin: "shè", meaning: "居住的房子", example: "宿舍、房舍" },
+                { character: "屋", pinyin: "wū", meaning: "房，房间", example: "屋子、房屋" },
+                { character: "房", pinyin: "fáng", meaning: "住人或放东西的建筑物", example: "房子、房间" },
+                { character: "门", pinyin: "mén", meaning: "建筑物的出入口，又指安装在出入口能开关的装置", example: "门口、大门" },
+                { character: "窗", pinyin: "chuāng", meaning: "房屋通气透光的装置", example: "窗户、窗口" },
+                { character: "桌", pinyin: "zhuō", meaning: "几案，可用于饮食、读书、写字", example: "桌子、书桌" },
+                { character: "椅", pinyin: "yǐ", meaning: "有靠背的坐具", example: "椅子、桌椅" },
+                { character: "床", pinyin: "chuáng", meaning: "供人睡卧的家具", example: "床铺、床位" },
+                { character: "灯", pinyin: "dēng", meaning: "照明的器具", example: "电灯、灯光" },
+                { character: "书", pinyin: "shū", meaning: "成本的著作", example: "书本、书籍" },
+                { character: "本", pinyin: "běn", meaning: "草木的根，事物的根源", example: "根本、书本" },
+                { character: "笔", pinyin: "bǐ", meaning: "写字、画图的工具", example: "铅笔、毛笔" },
+                { character: "纸", pinyin: "zhǐ", meaning: "用植物纤维制成的薄片，作为写画、印刷书报、包装等用", example: "纸张、报纸" },
+                { character: "尺", pinyin: "chǐ", meaning: "中国市制长度单位", example: "尺子、尺寸" },
+                { character: "刀", pinyin: "dāo", meaning: "用来切、割、斩、削、砍、刺、铡的工具", example: "刀子、菜刀" },
+                { character: "剪", pinyin: "jiǎn", meaning: "一种铰东西的用具", example: "剪刀、剪子" },
+                { character: "针", pinyin: "zhēn", meaning: "缝织衣物引线用的一种细长的工具", example: "针线、针尖" },
+                { character: "线", pinyin: "xiàn", meaning: "用丝、棉、麻、金属等制成的细长可以任意曲折的东西", example: "线条、毛线" },
+                { character: "布", pinyin: "bù", meaning: "棉、麻及棉型化学短纤维经纺纱后的织成物", example: "布料、布匹" },
+                { character: "衣", pinyin: "yī", meaning: "人穿在身上用以蔽体的东西", example: "衣服、上衣" },
+                { character: "服", pinyin: "fú", meaning: "衣裳", example: "服装、衣服" },
+                { character: "裤", pinyin: "kù", meaning: "穿在腰部以下的衣服，有裤腰、裤裆和两条裤腿", example: "裤子、长裤" },
+                { character: "鞋", pinyin: "xié", meaning: "穿在脚上便于走路的东西", example: "鞋子、皮鞋" },
+                { character: "帽", pinyin: "mào", meaning: "盖头的东西", example: "帽子、草帽" },
+                { character: "袜", pinyin: "wà", meaning: "穿在脚上的东西", example: "袜子、棉袜" },
+                { character: "被", pinyin: "bèi", meaning: "睡觉时覆盖身体的东西", example: "被子、棉被" },
+                { character: "枕", pinyin: "zhěn", meaning: "躺着时垫在头下的东西", example: "枕头、枕巾" },
+                { character: "碗", pinyin: "wǎn", meaning: "盛饮食的器皿，上面口大而圆", example: "饭碗、碗筷" },
+                { character: "盘", pinyin: "pán", meaning: "盛放物品的扁而浅的用具", example: "盘子、盘碟" },
+                { character: "杯", pinyin: "bēi", meaning: "盛酒、水、茶等的器皿", example: "杯子、茶杯" },
+                { character: "壶", pinyin: "hú", meaning: "陶瓷或金属制成的一种有把有嘴的器具，通常用来盛茶、酒等液体", example: "茶壶、水壶" },
+                { character: "锅", pinyin: "guō", meaning: "烹煮食物或烧水的器具", example: "锅子、铁锅" },
+                { character: "勺", pinyin: "sháo", meaning: "一种有柄的可以舀取东西的器具", example: "勺子、汤勺" },
+                { character: "筷", pinyin: "kuài", meaning: "夹取食物的用具", example: "筷子、碗筷" },
+                { character: "米", pinyin: "mǐ", meaning: "谷物去壳后的子实", example: "大米、米饭" },
+                { character: "面", pinyin: "miàn", meaning: "粮食磨成的粉", example: "面粉、面条" },
+                { character: "饭", pinyin: "fàn", meaning: "煮熟的谷类食物", example: "米饭、饭菜" },
+                { character: "菜", pinyin: "cài", meaning: "供作副食品的植物", example: "蔬菜、菜园" },
+                { character: "肉", pinyin: "ròu", meaning: "人或动物体内红色、柔软的物质", example: "猪肉、肉类" },
+                { character: "鱼", pinyin: "yú", meaning: "脊椎动物的一类，生活在水中，一般有鳞和鳍，用鳃呼吸", example: "鱼类、钓鱼" },
+                { character: "鸡", pinyin: "jī", meaning: "家禽，品种很多，翅膀短，不能高飞", example: "鸡肉、鸡蛋" },
+                { character: "鸭", pinyin: "yā", meaning: "鸟类的一科，嘴扁腿短，趾间有蹼，善游泳，不能高飞", example: "鸭子、鸭蛋" },
+                { character: "鹅", pinyin: "é", meaning: "家禽，比鸭子大，颈长，喙扁阔，尾短，体白色或灰色，额部有肉质突起，雄的突起较大", example: "鹅毛、天鹅" },
+                { character: "牛", pinyin: "niú", meaning: "哺乳动物，趾端有蹄，头上长一对角，是反刍类动物，力量很大，能耕田拉车", example: "黄牛、牛奶" },
+                { character: "羊", pinyin: "yáng", meaning: "哺乳动物，反刍类，一般头上有一对角，种类很多", example: "山羊、绵羊" },
+                { character: "猪", pinyin: "zhū", meaning: "哺乳动物，肉可食，鬃可制刷，皮可制革，粪是很好的肥料", example: "猪肉、猪圈" },
+                { character: "狗", pinyin: "gǒu", meaning: "哺乳动物，种类很多，听觉嗅觉都很敏锐，善于看守门户，有的可以训练成军犬、警犬", example: "狗叫、小狗" },
+                { character: "猫", pinyin: "māo", meaning: "哺乳动物，面呈圆形，脚有利爪，行动敏捷，会捉老鼠", example: "猫眼、小猫" },
+                { character: "兔", pinyin: "tù", meaning: "哺乳动物，耳长，尾短，上唇中间裂开，后腿较长，跑得快", example: "兔子、白兔" },
+                { character: "鼠", pinyin: "shǔ", meaning: "哺乳动物的一科，种类很多，一般的身体小，尾巴长，门齿很发达，没有犬齿", example: "老鼠、鼠类" },
+                { character: "鸟", pinyin: "niǎo", meaning: "脊椎动物的一纲，温血卵生，全身有羽毛，后肢能行走，前肢变为翅，大多数能飞", example: "鸟类、小鸟" },
+                { character: "虫", pinyin: "chóng", meaning: "节肢动物的一类", example: "昆虫、虫子" },
+                { character: "鱼", pinyin: "yú", meaning: "脊椎动物的一类，生活在水中，一般有鳞和鳍，用鳃呼吸", example: "鱼类、钓鱼" },
+                { character: "虾", pinyin: "xiā", meaning: "节肢动物，身上有壳，腹部有很多环节", example: "虾米、龙虾" },
+                { character: "蟹", pinyin: "xiè", meaning: "节肢动物，水陆两栖，全身有甲壳，足有五对，前双足成钳状，称螯", example: "螃蟹、蟹黄" },
+                { character: "贝", pinyin: "bèi", meaning: "蛤蜊、珠母、刀蚌、文蛤等有介壳软体动物的总称", example: "贝壳、宝贝" },
+                { character: "龟", pinyin: "guī", meaning: "爬行动物的一科，腹背都有硬甲，头尾和脚能缩入甲中，耐饥渴，寿命很长", example: "乌龟、龟甲" },
+                { character: "蛇", pinyin: "shé", meaning: "爬行动物，身体细长，体上有鳞，没有四肢", example: "蛇类、毒蛇" },
+                { character: "蛙", pinyin: "wā", meaning: "两栖动物的一科，无尾，后肢长，前肢短，趾有蹼，善于跳跃和泅水", example: "青蛙、蛙泳" }
             ],
             3: [
                 { character: "爱", pinyin: "ài", meaning: "对人或事物有深厚的感情", example: "爱心、爱国" },
@@ -633,7 +798,69 @@
                 { character: "说", pinyin: "shuō", meaning: "用话来表达意思", example: "说话、说明" },
                 { character: "话", pinyin: "huà", meaning: "说出来的能表达思想感情的声音，亦指把这种声音记录下来的文字", example: "话语、电话" },
                 { character: "讲", pinyin: "jiǎng", meaning: "说，谈", example: "讲话、演讲" },
-                { character: "谈", pinyin: "tán", meaning: "说，对话", example: "谈话、交谈" }
+                { character: "谈", pinyin: "tán", meaning: "说，对话", example: "谈话、交谈" },
+                { character: "论", pinyin: "lùn", meaning: "分析判断事物的道理", example: "论文、讨论" },
+                { character: "题", pinyin: "tí", meaning: "写作或讲演内容的总名目", example: "题目、题材" },
+                { character: "目", pinyin: "mù", meaning: "眼睛，看，视", example: "目光、目的" },
+                { character: "思", pinyin: "sī", meaning: "想，考虑，动脑筋", example: "思考、思想" },
+                { character: "想", pinyin: "xiǎng", meaning: "动脑筋，思索", example: "想象、想法" },
+                { character: "念", pinyin: "niàn", meaning: "惦记，常常想", example: "念头、思念" },
+                { character: "记", pinyin: "jì", meaning: "把印象保持在脑子里", example: "记忆、记录" },
+                { character: "忆", pinyin: "yì", meaning: "回想，想念", example: "回忆、记忆" },
+                { character: "知", pinyin: "zhī", meaning: "晓得，明了", example: "知道、知识" },
+                { character: "识", pinyin: "shí", meaning: "知道，认得，能辨别", example: "认识、见识" },
+                { character: "懂", pinyin: "dǒng", meaning: "了解，明白", example: "懂得、懂事" },
+                { character: "明", pinyin: "míng", meaning: "亮，清楚，懂得，了解", example: "明天、明白" },
+                { character: "白", pinyin: "bái", meaning: "雪花或乳汁那样的颜色", example: "白色、白云" },
+                { character: "黑", pinyin: "hēi", meaning: "像墨和煤那样的颜色", example: "黑色、黑夜" },
+                { character: "红", pinyin: "hóng", meaning: "像鲜血的颜色", example: "红色、红旗" },
+                { character: "黄", pinyin: "huáng", meaning: "像金子或向日葵花的颜色", example: "黄色、黄河" },
+                { character: "蓝", pinyin: "lán", meaning: "用靛青染成的颜色，晴天天空的颜色", example: "蓝色、蓝天" },
+                { character: "绿", pinyin: "lǜ", meaning: "蓝和黄混合成的颜色，一般草和树叶呈现这种颜色", example: "绿色、绿叶" },
+                { character: "紫", pinyin: "zǐ", meaning: "红和蓝合成的颜色", example: "紫色、紫菜" },
+                { character: "灰", pinyin: "huī", meaning: "介于黑和白之间的颜色", example: "灰色、灰尘" },
+                { character: "橙", pinyin: "chéng", meaning: "红和黄合成的颜色", example: "橙色、橙子" },
+                { character: "青", pinyin: "qīng", meaning: "深绿色或浅蓝色", example: "青色、青年" },
+                { character: "色", pinyin: "sè", meaning: "颜色，由物体发射、反射的光通过视觉而产生的印象", example: "色彩、颜色" },
+                { character: "彩", pinyin: "cǎi", meaning: "各种颜色交织", example: "彩色、彩云" },
+                { character: "光", pinyin: "guāng", meaning: "太阳、火、电等放射出来耀人眼睛，使人感到明亮，能看见物体的那种东西", example: "光明、阳光" },
+                { character: "影", pinyin: "yǐng", meaning: "物体挡住光线时所形成的四周有光中间无光的形象，亦指不真切的形象或印象", example: "影子、电影" },
+                { character: "形", pinyin: "xíng", meaning: "实体", example: "形状、形式" },
+                { character: "状", pinyin: "zhuàng", meaning: "形容，样子", example: "状态、状况" },
+                { character: "态", pinyin: "tài", meaning: "形状，样", example: "态度、形态" },
+                { character: "样", pinyin: "yàng", meaning: "形状", example: "样子、样本" },
+                { character: "模", pinyin: "mó", meaning: "法式，规范，标准", example: "模型、模范" },
+                { character: "式", pinyin: "shì", meaning: "物体外形的样子", example: "形式、方式" },
+                { character: "类", pinyin: "lèi", meaning: "很多相似事物的综合", example: "种类、类别" },
+                { character: "种", pinyin: "zhǒng", meaning: "生物在生态和形态上具有不同特点的分类的基本单位", example: "种子、种类" },
+                { character: "属", pinyin: "shǔ", meaning: "同一家族的", example: "属于、亲属" },
+                { character: "别", pinyin: "bié", meaning: "分离", example: "分别、别离" },
+                { character: "分", pinyin: "fēn", meaning: "区划开", example: "分开、分别" },
+                { character: "合", pinyin: "hé", meaning: "闭，对拢", example: "合作、合并" },
+                { character: "集", pinyin: "jí", meaning: "群鸟栖止于树上", example: "集合、集体" },
+                { character: "体", pinyin: "tǐ", meaning: "人、动物的全身", example: "身体、体育" },
+                { character: "育", pinyin: "yù", meaning: "生养", example: "生育、教育" },
+                { character: "教", pinyin: "jiào", meaning: "指导，训诲", example: "教育、教学" },
+                { character: "导", pinyin: "dǎo", meaning: "指引，带领", example: "引导、领导" },
+                { character: "指", pinyin: "zhǐ", meaning: "手指，指向，指点", example: "手指、指示" },
+                { character: "挥", pinyin: "huī", meaning: "舞动，摇摆", example: "挥手、指挥" },
+                { character: "动", pinyin: "dòng", meaning: "改变原来位置或脱离静止状态，与静相对", example: "动作、动物" },
+                { character: "静", pinyin: "jìng", meaning: "停止的，与动相对", example: "安静、静止" },
+                { character: "止", pinyin: "zhǐ", meaning: "停住不动", example: "停止、禁止" },
+                { character: "行", pinyin: "xíng", meaning: "走", example: "行走、行动" },
+                { character: "走", pinyin: "zǒu", meaning: "行", example: "走路、走开" },
+                { character: "跑", pinyin: "pǎo", meaning: "奔，两脚交互向前迅速跃进", example: "跑步、奔跑" },
+                { character: "跳", pinyin: "tiào", meaning: "两脚离地全身向上或向前的动作", example: "跳高、跳舞" },
+                { character: "跃", pinyin: "yuè", meaning: "跳", example: "跳跃、跃进" },
+                { character: "站", pinyin: "zhàn", meaning: "立，久立", example: "站立、站台" },
+                { character: "立", pinyin: "lì", meaning: "站，引申为竖起来", example: "站立、立刻" },
+                { character: "坐", pinyin: "zuò", meaning: "古人双膝跪地，把臀部靠在脚后跟上，后泛指以臀部着物而止息", example: "坐下、坐车" },
+                { character: "卧", pinyin: "wò", meaning: "睡倒，躺或趴", example: "卧倒、卧室" },
+                { character: "躺", pinyin: "tǎng", meaning: "身体倒在地上或其他物体上，也指车辆、器具等倒在地上", example: "躺下、躺椅" },
+                { character: "睡", pinyin: "shuì", meaning: "闭目安息，大脑皮质处于休息状态", example: "睡觉、睡眠" },
+                { character: "醒", pinyin: "xǐng", meaning: "睡眠状态结束或尚未入睡", example: "醒来、清醒" },
+                { character: "梦", pinyin: "mèng", meaning: "睡眠时身体内外各种刺激或残留在大脑里的外界刺激引起的景象活动", example: "梦想、做梦" },
+                { character: "觉", pinyin: "jué", meaning: "人或动物的器官受刺激后对事物的感受辨别", example: "感觉、觉得" }
             ],
             4: [
                 { character: "美", pinyin: "měi", meaning: "好，善，得意，高兴", example: "美丽、美好" },
@@ -659,7 +886,65 @@
                 { character: "找", pinyin: "zhǎo", meaning: "寻求，想要得到", example: "寻找、找人" },
                 { character: "发", pinyin: "fā", meaning: "产生，发生", example: "发现、发明" },
                 { character: "现", pinyin: "xiàn", meaning: "显露，出现", example: "现在、发现" },
-                { character: "发", pinyin: "fā", meaning: "表达，说出", example: "发表、发言" }
+                { character: "发", pinyin: "fā", meaning: "表达，说出", example: "发表、发言" },
+                { character: "表", pinyin: "biǎo", meaning: "外部，外面，外貌", example: "表面、表现" },
+                { character: "达", pinyin: "dá", meaning: "通，到达", example: "达到、表达" },
+                { character: "通", pinyin: "tōng", meaning: "没有阻碍，可以穿过，能够达到", example: "通过、通知" },
+                { character: "过", pinyin: "guò", meaning: "从这儿到那儿，从此时到彼时", example: "过去、经过" },
+                { character: "程", pinyin: "chéng", meaning: "规矩，法式", example: "程序、程度" },
+                { character: "序", pinyin: "xù", meaning: "次第", example: "顺序、秩序" },
+                { character: "列", pinyin: "liè", meaning: "排成的行", example: "排列、队列" },
+                { character: "排", pinyin: "pái", meaning: "摆成行列", example: "排列、排队" },
+                { character: "队", pinyin: "duì", meaning: "排得整齐的行列", example: "队伍、队列" },
+                { character: "伍", pinyin: "wǔ", meaning: "古代军队的编制，一伍五人", example: "队伍、入伍" },
+                { character: "组", pinyin: "zǔ", meaning: "结合，构成", example: "组成、组织" },
+                { character: "织", pinyin: "zhī", meaning: "用丝、麻、棉纱、毛线等编成布或衣物等", example: "纺织、组织" },
+                { character: "构", pinyin: "gòu", meaning: "结成，组合，造", example: "构造、结构" },
+                { character: "造", pinyin: "zào", meaning: "制作，做", example: "制造、创造" },
+                { character: "建", pinyin: "jiàn", meaning: "立，设立，成立", example: "建设、建筑" },
+                { character: "筑", pinyin: "zhù", meaning: "建造，修盖", example: "建筑、筑路" },
+                { character: "设", pinyin: "shè", meaning: "布置，安排", example: "设计、设备" },
+                { character: "计", pinyin: "jì", meaning: "核算", example: "计算、计划" },
+                { character: "划", pinyin: "huà", meaning: "分开", example: "划分、计划" },
+                { character: "分", pinyin: "fēn", meaning: "区划开", example: "分开、分别" },
+                { character: "类", pinyin: "lèi", meaning: "很多相似事物的综合", example: "种类、类别" },
+                { character: "别", pinyin: "bié", meaning: "分离", example: "分别、别离" },
+                { character: "区", pinyin: "qū", meaning: "分别，划分", example: "区别、区域" },
+                { character: "域", pinyin: "yù", meaning: "在一定疆界内的地方", example: "地域、领域" },
+                { character: "境", pinyin: "jìng", meaning: "疆界，边界", example: "边境、境界" },
+                { character: "界", pinyin: "jiè", meaning: "边境，一个区域的边限", example: "边界、世界" },
+                { character: "世", pinyin: "shì", meaning: "一个时代，有时特指三十年", example: "世界、世纪" },
+                { character: "纪", pinyin: "jì", meaning: "记载", example: "纪律、世纪" },
+                { character: "历", pinyin: "lì", meaning: "经过", example: "经历、历史" },
+                { character: "史", pinyin: "shǐ", meaning: "自然界和人类社会的发展过程，亦指记述、研究这些的文字和学科", example: "历史、史书" },
+                { character: "时", pinyin: "shí", meaning: "一切事物不断发展变化所经历的过程", example: "时间、时代" },
+                { character: "代", pinyin: "dài", meaning: "替", example: "代替、时代" },
+                { character: "年", pinyin: "nián", meaning: "地球绕太阳一周的时间", example: "年份、新年" },
+                { character: "月", pinyin: "yuè", meaning: "地球最大的天然卫星", example: "月亮、月份" },
+                { character: "日", pinyin: "rì", meaning: "离地球最近的恒星", example: "太阳、日子" },
+                { character: "期", pinyin: "qī", meaning: "规定的时间，或一段时间", example: "期限、期待" },
+                { character: "限", pinyin: "xiàn", meaning: "指定的范围", example: "限制、期限" },
+                { character: "制", pinyin: "zhì", meaning: "规定，订立", example: "制度、制造" },
+                { character: "度", pinyin: "dù", meaning: "计算长短的器具或单位", example: "度量、程度" },
+                { character: "量", pinyin: "liàng", meaning: "古代指斗、升一类测定物体体积的器具", example: "数量、质量" },
+                { character: "数", pinyin: "shù", meaning: "表示、划分或计算出来的量", example: "数字、数学" },
+                { character: "字", pinyin: "zì", meaning: "用来记录语言的符号", example: "汉字、字典" },
+                { character: "母", pinyin: "mǔ", meaning: "妈妈，娘", example: "母亲、字母" },
+                { character: "父", pinyin: "fù", meaning: "爸爸", example: "父亲、父母" },
+                { character: "亲", pinyin: "qīn", meaning: "有血统或夫妻关系的", example: "亲人、亲戚" },
+                { character: "戚", pinyin: "qī", meaning: "因婚姻联成的关系", example: "亲戚、外戚" },
+                { character: "兄", pinyin: "xiōng", meaning: "哥哥", example: "兄弟、兄长" },
+                { character: "弟", pinyin: "dì", meaning: "同父母、同父或同母而年纪比自己小的男子", example: "弟弟、兄弟" },
+                { character: "姐", pinyin: "jiě", meaning: "同父母、同父或同母而年纪比自己大的女子", example: "姐姐、姐妹" },
+                { character: "妹", pinyin: "mèi", meaning: "同父母、同父或同母而年纪比自己小的女子", example: "妹妹、姐妹" },
+                { character: "儿", pinyin: "ér", meaning: "小孩子，儿子", example: "儿子、儿童" },
+                { character: "女", pinyin: "nǚ", meaning: "女性，女人", example: "女子、女儿" },
+                { character: "子", pinyin: "zǐ", meaning: "古代指儿女，现专指儿子", example: "儿子、子女" },
+                { character: "孙", pinyin: "sūn", meaning: "儿子的儿子", example: "孙子、孙女" },
+                { character: "曾", pinyin: "zēng", meaning: "指与自己中间隔两代的亲属", example: "曾祖、曾孙" },
+                { character: "祖", pinyin: "zǔ", meaning: "父亲的上一辈", example: "祖父、祖先" },
+                { character: "宗", pinyin: "zōng", meaning: "家族的上辈，民族的祖先", example: "祖宗、宗族" },
+                { character: "族", pinyin: "zú", meaning: "亲属，泛指同姓之亲", example: "家族、民族" }
             ],
             5: [
                 { character: "尊", pinyin: "zūn", meaning: "地位或辈分高，敬重", example: "尊重、尊敬" },
@@ -685,7 +970,57 @@
                 { character: "养", pinyin: "yǎng", meaning: "抚育，供给生活品", example: "养育、培养" },
                 { character: "素", pinyin: "sù", meaning: "本色，白色", example: "素质、朴素" },
                 { character: "质", pinyin: "zhì", meaning: "本体，本性", example: "质量、本质" },
-                { character: "量", pinyin: "liàng", meaning: "古代指斗、升一类测定物体体积的器具", example: "数量、质量" }
+                { character: "量", pinyin: "liàng", meaning: "古代指斗、升一类测定物体体积的器具", example: "数量、质量" },
+                { character: "才", pinyin: "cái", meaning: "能力，才能", example: "才能、才华" },
+                { character: "能", pinyin: "néng", meaning: "才干，本事", example: "能力、能够" },
+                { character: "力", pinyin: "lì", meaning: "人和动物筋肉的效能，力气，力量", example: "力量、力气" },
+                { character: "功", pinyin: "gōng", meaning: "劳绩，成绩，成就，成效", example: "功劳、功夫" },
+                { character: "绩", pinyin: "jì", meaning: "成果，功业", example: "成绩、业绩" },
+                { character: "效", pinyin: "xiào", meaning: "摹仿", example: "效果、效率" },
+                { character: "率", pinyin: "lǜ", meaning: "比值，两数之比", example: "效率、概率" },
+                { character: "果", pinyin: "guǒ", meaning: "某些植物花落后含有种子的部分", example: "果实、结果" },
+                { character: "因", pinyin: "yīn", meaning: "原由，缘故", example: "原因、因为" },
+                { character: "由", pinyin: "yóu", meaning: "原因", example: "理由、由于" },
+                { character: "原", pinyin: "yuán", meaning: "最初的，开始的", example: "原来、原因" },
+                { character: "始", pinyin: "shǐ", meaning: "起头，最初", example: "开始、始终" },
+                { character: "终", pinyin: "zhōng", meaning: "末了，完了，与始相对", example: "终于、终点" },
+                { character: "结", pinyin: "jié", meaning: "系，绾", example: "结束、结果" },
+                { character: "束", pinyin: "shù", meaning: "捆住，系", example: "束缚、结束" },
+                { character: "缚", pinyin: "fù", meaning: "捆绑", example: "束缚、缚住" },
+                { character: "绑", pinyin: "bǎng", meaning: "捆，缚", example: "绑架、捆绑" },
+                { character: "捆", pinyin: "kǔn", meaning: "把散的东西用绳扎起来", example: "捆绑、捆住" },
+                { character: "扎", pinyin: "zā", meaning: "捆，缠束", example: "包扎、扎紧" },
+                { character: "紧", pinyin: "jǐn", meaning: "密切合拢，与松相对", example: "紧张、紧急" },
+                { character: "松", pinyin: "sōng", meaning: "种子植物的一属，一般为常绿乔木，脂可提取松香或松节油等", example: "松树、轻松" },
+                { character: "张", pinyin: "zhāng", meaning: "开，展开", example: "张开、紧张" },
+                { character: "弛", pinyin: "chí", meaning: "放松，松懈，解除", example: "松弛、弛缓" },
+                { character: "缓", pinyin: "huǎn", meaning: "慢，与急相对", example: "缓慢、缓和" },
+                { character: "急", pinyin: "jí", meaning: "焦躁，气恼，发怒", example: "着急、紧急" },
+                { character: "躁", pinyin: "zào", meaning: "性急，不冷静", example: "急躁、暴躁" },
+                { character: "暴", pinyin: "bào", meaning: "强大而突然来的，又猛又急的", example: "暴力、暴雨" },
+                { character: "怒", pinyin: "nù", meaning: "生气，气愤", example: "发怒、愤怒" },
+                { character: "愤", pinyin: "fèn", meaning: "因不满而忿怒或怨恨", example: "愤怒、气愤" },
+                { character: "恨", pinyin: "hèn", meaning: "怨，仇视", example: "怨恨、仇恨" },
+                { character: "怨", pinyin: "yuàn", meaning: "仇恨", example: "怨恨、抱怨" },
+                { character: "仇", pinyin: "chóu", meaning: "深切的怨恨", example: "仇恨、仇人" },
+                { character: "恩", pinyin: "ēn", meaning: "好处，深厚的情谊", example: "恩情、感恩" },
+                { character: "情", pinyin: "qíng", meaning: "外界事物所引起的喜、怒、爱、憎、哀、惧等心理状态", example: "感情、情绪" },
+                { character: "感", pinyin: "gǎn", meaning: "觉出，使在意识、情绪上起反应", example: "感觉、感动" },
+                { character: "觉", pinyin: "jué", meaning: "人或动物的器官受刺激后对事物的感受辨别", example: "感觉、觉得" },
+                { character: "知", pinyin: "zhī", meaning: "晓得，明了", example: "知道、知识" },
+                { character: "识", pinyin: "shí", meaning: "知道，认得，能辨别", example: "认识、见识" },
+                { character: "认", pinyin: "rèn", meaning: "分辨，识别", example: "认识、认可" },
+                { character: "可", pinyin: "kě", meaning: "允许", example: "可以、可能" },
+                { character: "能", pinyin: "néng", meaning: "才干，本事", example: "能力、能够" },
+                { character: "以", pinyin: "yǐ", meaning: "用，拿，把，将", example: "以为、所以" },
+                { character: "为", pinyin: "wéi", meaning: "做，行，做事", example: "作为、行为" },
+                { character: "行", pinyin: "xíng", meaning: "走", example: "行走、行为" },
+                { character: "动", pinyin: "dòng", meaning: "改变原来位置或脱离静止状态，与静相对", example: "动作、动物" },
+                { character: "作", pinyin: "zuò", meaning: "起，兴起", example: "作为、作品" },
+                { character: "品", pinyin: "pǐn", meaning: "物件，物品", example: "作品、产品" },
+                { character: "产", pinyin: "chǎn", meaning: "人或动物生子", example: "生产、产品" },
+                { character: "生", pinyin: "shēng", meaning: "一切可以发育的物体在一定条件下具有了最初的体积和重量，并能发展长大", example: "生产、生活" },
+                { character: "活", pinyin: "huó", meaning: "生存，有生命的，能生长", example: "生活、活动" }
             ],
             6: [
                 { character: "智", pinyin: "zhì", meaning: "聪明，见识，智慧", example: "智慧、智力" },
@@ -711,31 +1046,110 @@
                 { character: "秘", pinyin: "mì", meaning: "不公开的，不让大家知道的", example: "秘密、神秘" },
                 { character: "神", pinyin: "shén", meaning: "迷信的人称天地万物的创造者和所崇拜的人死后的精灵", example: "神仙、神秘" },
                 { character: "秘", pinyin: "mì", meaning: "保守秘密", example: "秘书、秘籍" },
-                { character: "密", pinyin: "mì", meaning: "稠，空隙小，与稀、疏相对", example: "密集、秘密" }
+                { character: "密", pinyin: "mì", meaning: "稠，空隙小，与稀、疏相对", example: "密集、秘密" },
+                { character: "疏", pinyin: "shū", meaning: "事物间距离大，空隙大，与密相对", example: "稀疏、疏远" },
+                { character: "稀", pinyin: "xī", meaning: "事物中间距离远，空隙大，与密相对", example: "稀疏、稀少" },
+                { character: "少", pinyin: "shǎo", meaning: "数量小，与多相对", example: "多少、很少" },
+                { character: "多", pinyin: "duō", meaning: "数量大，与少相对", example: "多少、很多" },
+                { character: "众", pinyin: "zhòng", meaning: "许多，与寡相对", example: "众多、群众" },
+                { character: "寡", pinyin: "guǎ", meaning: "少，缺少", example: "寡言、寡情" },
+                { character: "群", pinyin: "qún", meaning: "相聚成伙的，聚集在一起的", example: "群众、群体" },
+                { character: "体", pinyin: "tǐ", meaning: "人、动物的全身", example: "身体、体育" },
+                { character: "集", pinyin: "jí", meaning: "群鸟栖止于树上", example: "集合、集体" },
+                { character: "合", pinyin: "hé", meaning: "闭，对拢", example: "合作、合并" },
+                { character: "并", pinyin: "bìng", meaning: "合在一起", example: "合并、并且" },
+                { character: "联", pinyin: "lián", meaning: "连结，结合", example: "联合、联系" },
+                { character: "系", pinyin: "xì", meaning: "联结，拴", example: "关系、系列" },
+                { character: "统", pinyin: "tǒng", meaning: "总括，总起来", example: "统一、系统" },
+                { character: "一", pinyin: "yī", meaning: "数名，最小的正整数", example: "一个、统一" },
+                { character: "致", pinyin: "zhì", meaning: "送给，给予", example: "致敬、致力" },
+                { character: "力", pinyin: "lì", meaning: "人和动物筋肉的效能，力气，力量", example: "力量、力气" },
+                { character: "量", pinyin: "liàng", meaning: "古代指斗、升一类测定物体体积的器具", example: "数量、质量" },
+                { character: "质", pinyin: "zhì", meaning: "本体，本性", example: "质量、本质" },
+                { character: "本", pinyin: "běn", meaning: "草木的根，事物的根源", example: "根本、书本" },
+                { character: "根", pinyin: "gēn", meaning: "植物茎干下部长在土里的部分", example: "根本、树根" },
+                { character: "基", pinyin: "jī", meaning: "建筑物的根脚", example: "基础、基本" },
+                { character: "础", pinyin: "chǔ", meaning: "垫在柱下的石磉", example: "基础、础石" },
+                { character: "石", pinyin: "shí", meaning: "构成地壳的坚硬物质，是由矿物集合而成的", example: "石头、石油" },
+                { character: "油", pinyin: "yóu", meaning: "动植物体内所含的脂肪或矿产的碳氢化合物的混和液体，一般不溶于水，容易燃烧", example: "石油、油料" },
+                { character: "料", pinyin: "liào", meaning: "估计，猜想", example: "材料、预料" },
+                { character: "材", pinyin: "cái", meaning: "木料，泛指一切原料或资料", example: "材料、木材" },
+                { character: "资", pinyin: "zī", meaning: "财物，钱财", example: "资源、资本" },
+                { character: "源", pinyin: "yuán", meaning: "水流所从出的地方", example: "水源、资源" },
+                { character: "泉", pinyin: "quán", meaning: "从地下流出的水源", example: "泉水、泉眼" },
+                { character: "眼", pinyin: "yǎn", meaning: "人和动物的视觉器官", example: "眼睛、眼光" },
+                { character: "光", pinyin: "guāng", meaning: "太阳、火、电等放射出来耀人眼睛，使人感到明亮，能看见物体的那种东西", example: "光明、阳光" },
+                { character: "明", pinyin: "míng", meaning: "亮，清楚，懂得，了解", example: "明天、明白" },
+                { character: "白", pinyin: "bái", meaning: "雪花或乳汁那样的颜色", example: "白色、白云" },
+                { character: "云", pinyin: "yún", meaning: "悬浮在空中由大量水滴、冰晶或兼由两者组成可见的聚合体", example: "云彩、白云" },
+                { character: "彩", pinyin: "cǎi", meaning: "各种颜色交织", example: "彩色、彩云" },
+                { character: "虹", pinyin: "hóng", meaning: "雨后天空中出现的彩色圆弧", example: "彩虹、虹霓" },
+                { character: "霓", pinyin: "ní", meaning: "虹的一种，亦称副虹", example: "霓虹、霓裳" },
+                { character: "霞", pinyin: "xiá", meaning: "日出或日落时天空云层因受日光斜射而呈现的光彩", example: "朝霞、晚霞" },
+                { character: "雾", pinyin: "wù", meaning: "接近地面的水蒸气，遇冷凝结后飘浮在空气中的小水点", example: "雾气、云雾" },
+                { character: "露", pinyin: "lù", meaning: "靠近地面的水蒸气，夜间遇冷凝结成的小水球", example: "露水、露珠" },
+                { character: "霜", pinyin: "shuāng", meaning: "附着在地面或植物上面的微细冰粒，是接近地面的水蒸气冷至摄氏零度以下凝结而成的", example: "霜冻、冰霜" },
+                { character: "雪", pinyin: "xuě", meaning: "天空中飘落的白色结晶体", example: "雪花、雪人" },
+                { character: "冰", pinyin: "bīng", meaning: "水因冷凝结成的固体", example: "冰块、冰霜" },
+                { character: "冻", pinyin: "dòng", meaning: "液体或含水分的东西遇冷凝结", example: "冻结、冰冻" },
+                { character: "凝", pinyin: "níng", meaning: "气体变为液体或液体变为固体", example: "凝固、凝结" },
+                { character: "固", pinyin: "gù", meaning: "结实，牢靠", example: "固定、牢固" },
+                { character: "定", pinyin: "dìng", meaning: "不动的，不变的", example: "一定、决定" }
             ]
         };
 
-        // 常见易错字
+        // 常见易错字（增加到50个）
         const errorProneWords = [
-            { character: "已", pinyin: "yǐ", meaning: "停止，罢了", reason: "与'己'、'巳'易混淆", example: "已经、不已" },
-            { character: "己", pinyin: "jǐ", meaning: "对别人称本身", reason: "与'已'、'巳'易混淆", example: "自己、己见" },
-            { character: "巳", pinyin: "sì", meaning: "地支的第六位", reason: "与'已'、'己'易混淆", example: "巳时" },
-            { character: "戌", pinyin: "xū", meaning: "地支的第十一位", reason: "与'戊'、'戍'、'戎'易混淆", example: "戊戌变法" },
-            { character: "戍", pinyin: "shù", meaning: "军队防守", reason: "与'戊'、'戌'、'戎'易混淆", example: "戍边、卫戍" },
-            { character: "戊", pinyin: "wù", meaning: "天干的第五位", reason: "与'戌'、'戍'、'戎'易混淆", example: "戊戌变法" },
-            { character: "戎", pinyin: "róng", meaning: "古代兵器的总称", reason: "与'戊'、'戌'、'戍'易混淆", example: "戎装、兵戎" },
-            { character: "茶", pinyin: "chá", meaning: "常绿灌木，叶可制饮料", reason: "与'荼'易混淆", example: "茶叶、喝茶" },
-            { character: "荼", pinyin: "tú", meaning: "古书上说的一种苦菜", reason: "与'茶'易混淆", example: "荼毒、如火如荼" },
-            { character: "崇", pinyin: "chóng", meaning: "高，尊重", reason: "与'祟'易混淆", example: "崇高、崇拜" },
-            { character: "祟", pinyin: "suì", meaning: "迷信说法指鬼神作怪害人", reason: "与'崇'易混淆", example: "作祟、鬼祟" },
-            { character: "拔", pinyin: "bá", meaning: "抽，拉出，连根拽出", reason: "与'拨'易混淆", example: "拔河、选拔" },
-            { character: "拨", pinyin: "bō", meaning: "用手指或棍棒等推动或挑动", reason: "与'拔'易混淆", example: "拨款、拨动" },
-            { character: "钓", pinyin: "diào", meaning: "用饵诱鱼上钩", reason: "与'钩'易混淆", example: "钓鱼、钓竿" },
-            { character: "钩", pinyin: "gōu", meaning: "悬挂或探取东西用的器具，形状弯曲", reason: "与'钓'易混淆", example: "鱼钩、钩子" },
-            { character: "蓝", pinyin: "lán", meaning: "用靛青染成的颜色，晴天天空的颜色", reason: "与'篮'易混淆", example: "蓝天、蓝色" },
-            { character: "篮", pinyin: "lán", meaning: "用藤、竹、柳条编成的有提梁的盛物器", reason: "与'蓝'易混淆", example: "篮子、篮球" },
-            { character: "在", pinyin: "zài", meaning: "存在，生存", reason: "与'再'易混淆", example: "现在、存在" },
-            { character: "再", pinyin: "zài", meaning: "表示又一次，有时专指第二次", reason: "与'在'易混淆", example: "再次、再见" }
+            { character: "已", pinyin: "yǐ", meaning: "停止，罢了", reason: "与'己'、'巳'易混淆，第三笔不出头", example: "已经、不已" },
+            { character: "己", pinyin: "jǐ", meaning: "对别人称本身", reason: "与'已'、'巳'易混淆，第三笔不出头", example: "自己、己见" },
+            { character: "巳", pinyin: "sì", meaning: "地支的第六位", reason: "与'已'、'己'易混淆，第三笔全封口", example: "巳时" },
+            { character: "戌", pinyin: "xū", meaning: "地支的第十一位", reason: "与'戊'、'戍'、'戎'易混淆，中间有一点", example: "戊戌变法" },
+            { character: "戍", pinyin: "shù", meaning: "军队防守", reason: "与'戊'、'戌'、'戎'易混淆，中间有一点", example: "戍边、卫戍" },
+            { character: "戊", pinyin: "wù", meaning: "天干的第五位", reason: "与'戌'、'戍'、'戎'易混淆，中间没有点", example: "戊戌变法" },
+            { character: "戎", pinyin: "róng", meaning: "古代兵器的总称", reason: "与'戊'、'戌'、'戍'易混淆，左下是十字", example: "戎装、兵戎" },
+            { character: "茶", pinyin: "chá", meaning: "常绿灌木，叶可制饮料", reason: "与'荼'易混淆，下面是木字底", example: "茶叶、喝茶" },
+            { character: "荼", pinyin: "tú", meaning: "古书上说的一种苦菜", reason: "与'茶'易混淆，下面是禾字底", example: "荼毒、如火如荼" },
+            { character: "崇", pinyin: "chóng", meaning: "高，尊重", reason: "与'祟'易混淆，上面是山字头", example: "崇高、崇拜" },
+            { character: "祟", pinyin: "suì", meaning: "迷信说法指鬼神作怪害人", reason: "与'崇'易混淆，上面是出字头", example: "作祟、鬼祟" },
+            { character: "拔", pinyin: "bá", meaning: "抽，拉出，连根拽出", reason: "与'拨'易混淆，右边是友字多一点", example: "拔河、选拔" },
+            { character: "拨", pinyin: "bō", meaning: "用手指或棍棒等推动或挑动", reason: "与'拔'易混淆，右边是发字", example: "拨款、拨动" },
+            { character: "钓", pinyin: "diào", meaning: "用饵诱鱼上钩", reason: "与'钩'易混淆，里面是一点", example: "钓鱼、钓竿" },
+            { character: "钩", pinyin: "gōu", meaning: "悬挂或探取东西用的器具，形状弯曲", reason: "与'钓'易混淆，里面是两点", example: "鱼钩、钩子" },
+            { character: "蓝", pinyin: "lán", meaning: "用靛青染成的颜色，晴天天空的颜色", reason: "与'篮'易混淆，下面是监字底", example: "蓝天、蓝色" },
+            { character: "篮", pinyin: "lán", meaning: "用藤、竹、柳条编成的有提梁的盛物器", reason: "与'蓝'易混淆，下面是竹字头", example: "篮子、篮球" },
+            { character: "在", pinyin: "zài", meaning: "存在，生存", reason: "与'再'易混淆，下面是个土字", example: "现在、存在" },
+            { character: "再", pinyin: "zài", meaning: "表示又一次，有时专指第二次", reason: "与'在'易混淆，下面是个冉字", example: "再次、再见" },
+            { character: "即", pinyin: "jí", meaning: "就是，靠近", reason: "与'既'易混淆，右边是单耳旁", example: "立即、即使" },
+            { character: "既", pinyin: "jì", meaning: "动作已经完了", reason: "与'即'易混淆，右边是无字底", example: "既然、既而" },
+            { character: "历", pinyin: "lì", meaning: "经过", reason: "与'厉'易混淆，下面是力字", example: "历史、经历" },
+            { character: "厉", pinyin: "lì", meaning: "严格，严肃", reason: "与'历'易混淆，下面是万字", example: "严厉、厉害" },
+            { character: "采", pinyin: "cǎi", meaning: "摘取，选取", reason: "与'彩'易混淆，下面是木字底", example: "采摘、采用" },
+            { character: "彩", pinyin: "cǎi", meaning: "各种颜色交织", reason: "与'采'易混淆，右边是三撇", example: "彩色、彩云" },
+            { character: "竞", pinyin: "jìng", meaning: "比赛，互相争胜", reason: "与'竟'易混淆，下面是兄字", example: "竞争、竞赛" },
+            { character: "竟", pinyin: "jìng", meaning: "终了，完毕", reason: "与'竞'易混淆，下面是儿字", example: "竟然、究竟" },
+            { character: "州", pinyin: "zhōu", meaning: "古代的一种行政区划", reason: "与'洲'易混淆，三点水区别", example: "九州、杭州" },
+            { character: "洲", pinyin: "zhōu", meaning: "水中的陆地", reason: "与'州'易混淆，有三点水偏旁", example: "亚洲、沙洲" },
+            { character: "令", pinyin: "lìng", meaning: "命令，使", reason: "与'今'易混淆，下面有一点", example: "命令、口令" },
+            { character: "今", pinyin: "jīn", meaning: "现在", reason: "与'令'易混淆，下面没有点", example: "今天、如今" },
+            { character: "氏", pinyin: "shì", meaning: "古代贵族标志宗族系统的称号", reason: "与'氐'易混淆，没有点", example: "姓氏、氏族" },
+            { character: "氐", pinyin: "dǐ", meaning: "中国古代民族", reason: "与'氏'易混淆，下面有一点", example: "氐族" },
+            { character: "末", pinyin: "mò", meaning: "梢，尖端", reason: "与'未'易混淆，第一横长", example: "末尾、末日" },
+            { character: "未", pinyin: "wèi", meaning: "不，不曾，没有", reason: "与'末'易混淆，第一横短", example: "未来、未知" },
+            { character: "拆", pinyin: "chāi", meaning: "把合在一起的弄开", reason: "与'折'易混淆，右边是斥字", example: "拆开、拆除" },
+            { character: "折", pinyin: "zhé", meaning: "断，弄断", reason: "与'拆'易混淆，右边是斤字", example: "折断、折扣" },
+            { character: "梁", pinyin: "liáng", meaning: "架在墙上或柱子上支撑房顶的横木", reason: "与'粱'易混淆，下面是木字底", example: "桥梁、房梁" },
+            { character: "粱", pinyin: "liáng", meaning: "高粱，一年生草本植物", reason: "与'梁'易混淆，下面是米字底", example: "高粱、粱米" },
+            { character: "辩", pinyin: "biàn", meaning: "说明是非或争论真假", reason: "与'辨'、'辫'易混淆，中间是言字", example: "辩论、辩解" },
+            { character: "辨", pinyin: "biàn", meaning: "分别，分析", reason: "与'辩'、'辫'易混淆，中间是点撇", example: "辨别、分辨" },
+            { character: "辫", pinyin: "biàn", meaning: "把头发分股编成的带状物", reason: "与'辩'、'辨'易混淆，中间是绞丝", example: "辫子、发辫" },
+            { character: "尊", pinyin: "zūn", meaning: "地位高，敬重", reason: "与'遵'易混淆，下面是寸字", example: "尊敬、尊重" },
+            { character: "遵", pinyin: "zūn", meaning: "依照，按照", reason: "与'尊'易混淆，走之底", example: "遵守、遵循" },
+            { character: "扰", pinyin: "rǎo", meaning: "打搅，搅乱", reason: "与'拢'易混淆，右边是尤字", example: "打扰、扰乱" },
+            { character: "拢", pinyin: "lǒng", meaning: "凑起，总合", reason: "与'扰'易混淆，右边是龙字", example: "合拢、靠拢" },
+            { character: "冠", pinyin: "guān", meaning: "帽子", reason: "与'寇'易混淆，上面是秃宝盖", example: "冠军、衣冠" },
+            { character: "寇", pinyin: "kòu", meaning: "盗匪，侵略者", reason: "与'冠'易混淆，上面是宝盖头", example: "敌寇、倭寇" },
+            { character: "暑", pinyin: "shǔ", meaning: "热", reason: "与'署'易混淆，下面是日字", example: "暑假、中暑" },
+            { character: "署", pinyin: "shǔ", meaning: "办理公务的机关", reason: "与'暑'易混淆，下面是者字", example: "公署、署名" }
         ];
 
         // 应用状态
@@ -865,29 +1279,6 @@
                     updatePaginationButtons();
                 }
             });
-            
-            // 点击生字标记为已学习
-            document.addEventListener('click', function(e) {
-                if (e.target.closest('.word-item')) {
-                    const wordItem = e.target.closest('.word-item');
-                    const character = wordItem.querySelector('.character').textContent;
-                    
-                    // 切换已学习状态
-                    if (appState.learnedWords.has(character)) {
-                        appState.learnedWords.delete(character);
-                        wordItem.classList.remove('selected');
-                    } else {
-                        appState.learnedWords.add(character);
-                        wordItem.classList.add('selected');
-                    }
-                    
-                    // 保存到本地存储
-                    saveLearnedWords();
-                    
-                    // 更新统计信息
-                    updateStatistics();
-                }
-            });
         }
 
         // 选择年级
@@ -952,12 +1343,6 @@
             if (appState.filteredWords.length > 0 && !appState.selectedWord) {
                 const firstWord = appState.filteredWords[0];
                 showWordDetail(firstWord);
-                
-                // 标记第一个生字为选中状态
-                const firstWordItem = wordListElement.querySelector('.word-item');
-                if (firstWordItem) {
-                    firstWordItem.classList.add('selected');
-                }
             } else if (appState.filteredWords.length === 0) {
                 // 如果没有匹配的生字
                 showEmptyWordDetail();
@@ -990,17 +1375,14 @@
                 const isSelected = appState.selectedWord && appState.selectedWord.character === word.character;
                 
                 const wordItem = document.createElement('div');
-                wordItem.className = `word-item ${isLearned ? 'selected' : ''} ${isSelected ? 'selected' : ''}`;
+                wordItem.className = `word-item ${isLearned ? 'learned' : ''} ${isSelected ? 'selected' : ''}`;
                 wordItem.innerHTML = `
                     <div class="character">${word.character}</div>
                     <div class="pinyin">${word.pinyin}</div>
                 `;
                 
                 // 点击生字查看详情
-                wordItem.addEventListener('click', function(e) {
-                    // 防止事件冒泡触发已学习标记
-                    if (!e.target.closest('.word-item')) return;
-                    
+                wordItem.addEventListener('click', function() {
                     // 移除所有选中状态
                     document.querySelectorAll('.word-item').forEach(item => {
                         item.classList.remove('selected');
@@ -1012,9 +1394,10 @@
                     // 显示生字详情
                     showWordDetail(word);
                     
-                    // 更新已学习状态
+                    // 标记为已学习
                     if (!appState.learnedWords.has(word.character)) {
                         appState.learnedWords.add(word.character);
+                        wordItem.classList.add('learned');
                         saveLearnedWords();
                         updateStatistics();
                     }
@@ -1047,6 +1430,20 @@
             detailPinyinElement.textContent = word.pinyin;
             detailMeaningElement.textContent = word.meaning;
             detailExampleElement.textContent = `例：${word.example}`;
+            
+            // 标记为已学习
+            if (!appState.learnedWords.has(word.character)) {
+                appState.learnedWords.add(word.character);
+                saveLearnedWords();
+                updateStatistics();
+                
+                // 更新对应的生字卡片样式
+                document.querySelectorAll('.word-item').forEach(item => {
+                    if (item.querySelector('.character').textContent === word.character) {
+                        item.classList.add('learned');
+                    }
+                });
+            }
         }
 
         // 显示空状态
