@@ -20,11 +20,64 @@
         }
         
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             padding: 20px;
         }
         
+        /* 顶部宣传区域 */
+        .promotion-section {
+            background: linear-gradient(90deg, #ff6b6b 0%, #ff8e8e 100%);
+            color: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 40px;
+            box-shadow: 0 15px 35px rgba(255, 107, 107, 0.3);
+            text-align: center;
+        }
+        
+        .promotion-title {
+            font-size: 2.2rem;
+            margin-bottom: 25px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .promotion-images {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap;
+            margin-bottom: 25px;
+        }
+        
+        .promotion-image {
+            width: 180px;
+            height: 180px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+        }
+        
+        .promotion-image:hover {
+            transform: translateY(-10px);
+        }
+        
+        .promotion-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .promotion-subtitle {
+            font-size: 1.3rem;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        /* 主内容区域 */
         header {
             text-align: center;
             margin-bottom: 50px;
@@ -145,6 +198,7 @@
             opacity: 0.9;
         }
         
+        /* 年级选择区域 - 上下册区分 */
         .grade-selection {
             background: white;
             border-radius: 20px;
@@ -159,10 +213,35 @@
             text-align: center;
         }
         
+        .grade-category {
+            margin-bottom: 40px;
+        }
+        
+        .category-title {
+            font-size: 1.8rem;
+            color: #182848;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #4b6cb7;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .category-title i {
+            color: #4b6cb7;
+        }
+        
         .grade-buttons {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 15px;
+        }
+        
+        @media (max-width: 1200px) {
+            .grade-buttons {
+                grid-template-columns: repeat(3, 1fr);
+            }
         }
         
         @media (max-width: 768px) {
@@ -182,12 +261,12 @@
         }
         
         .grade-btn {
-            padding: 25px 15px;
+            padding: 20px 10px;
             background: linear-gradient(135deg, #6a89cc 0%, #4b6cb7 100%);
             color: white;
             border: none;
-            border-radius: 15px;
-            font-size: 1.4rem;
+            border-radius: 12px;
+            font-size: 1.3rem;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -196,7 +275,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 8px;
         }
         
         .grade-btn:hover {
@@ -205,13 +284,21 @@
         }
         
         .grade-btn i {
-            font-size: 2rem;
+            font-size: 1.8rem;
         }
         
         .grade-btn span {
             font-size: 0.9rem;
             opacity: 0.9;
             font-weight: normal;
+        }
+        
+        .grade-btn.semester-1 {
+            background: linear-gradient(135deg, #6a89cc 0%, #4b6cb7 100%);
+        }
+        
+        .grade-btn.semester-2 {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
         }
         
         .navigation {
@@ -272,33 +359,51 @@
 </head>
 <body>
     <div class="container">
+        <!-- 顶部宣传区域 -->
+        <div class="promotion-section">
+            <h2 class="promotion-title">关注女侠，解锁更多陪娃技能！</h2>
+            <div class="promotion-images">
+                <div class="promotion-image">
+                    <img src="https://github.com/lm16688/xiaoxuelearning/raw/108620171ee8e47bd96c9fef2839929eddc3ba80/wechat.jpg" alt="微信公众号" onerror="this.style.display='none'">
+                </div>
+                <div class="promotion-image">
+                    <img src="https://github.com/lm16688/xiaoxuelearning/raw/108620171ee8e47bd96c9fef2839929eddc3ba80/xiaohongshu.jpg" alt="小红书" onerror="this.style.display='none'">
+                </div>
+                <div class="promotion-image">
+                    <img src="https://github.com/lm16688/xiaoxuelearning/raw/108620171ee8e47bd96c9fef2839929eddc3ba80/douyin.jpg" alt="抖音" onerror="this.style.display='none'">
+                </div>
+            </div>
+            <p class="promotion-subtitle">获取更多小学语文学习资源、教育方法和陪读技巧，让孩子的学习之路更轻松！</p>
+        </div>
+        
+        <!-- 主内容区域 -->
         <header>
             <h1>小学语文生字学习系统</h1>
-            <p class="subtitle">基于部编人教版小学语文1-6年级教材</p>
-            <p class="description">本系统收录了小学1-6年级所有生字词语，提供全面的学习资源和易错字专项训练，帮助学生系统掌握语文基础知识。</p>
+            <p class="subtitle">基于部编人教版小学语文1-6年级教材（上下册）</p>
+            <p class="description">本系统收录了小学1-6年级上下册所有生字词语，提供完整的拼音、释义、笔画顺序和易错字专项训练，帮助学生系统掌握语文基础知识。</p>
             <div class="stats">
-                <div class="stat-item">覆盖6个年级</div>
-                <div class="stat-item">2500+个生字</div>
-                <div class="stat-item">5000+个词语</div>
-                <div class="stat-item">100+个易错字</div>
+                <div class="stat-item">覆盖12个学期</div>
+                <div class="stat-item">3000+个生字</div>
+                <div class="stat-item">6000+个词语</div>
+                <div class="stat-item">200+个易错字</div>
             </div>
         </header>
         
         <div class="main-content">
             <div class="welcome-section">
                 <h2><i class="fas fa-graduation-cap"></i> 欢迎使用小学语文生字学习系统</h2>
-                <p>本系统根据部编人教版小学语文教材编写，涵盖1-6年级所有生字词语，为学生提供系统的语文基础知识学习平台。通过科学的分类和互动学习方式，帮助学生高效掌握语文知识。</p>
+                <p>本系统根据部编人教版小学语文教材编写，涵盖1-6年级上下册所有生字词语，为学生提供系统的语文基础知识学习平台。通过科学的分类和互动学习方式，帮助学生高效掌握语文知识。</p>
                 
                 <div class="features">
                     <div class="feature-card">
                         <div class="feature-icon"><i class="fas fa-book-open"></i></div>
                         <div class="feature-title">生字学习</div>
-                        <div class="feature-desc">按年级分类学习生字，包含拼音、释义、例词等详细信息</div>
+                        <div class="feature-desc">按年级上下册分类学习生字，包含拼音、释义、笔画顺序、例词等完整信息</div>
                     </div>
                     <div class="feature-card">
                         <div class="feature-icon"><i class="fas fa-exclamation-triangle"></i></div>
                         <div class="feature-title">易错字专项</div>
-                        <div class="feature-desc">重点学习容易写错、读错的字，配有详细分析和对比</div>
+                        <div class="feature-desc">200+个易错字按年级上下册分类，配有详细分析和对比</div>
                     </div>
                     <div class="feature-card">
                         <div class="feature-icon"><i class="fas fa-chart-line"></i></div>
@@ -308,39 +413,110 @@
                 </div>
             </div>
             
+            <!-- 年级选择区域 - 上下册区分 -->
             <div class="grade-selection">
-                <h2><i class="fas fa-school"></i> 选择年级开始学习</h2>
-                <div class="grade-buttons">
-                    <button class="grade-btn" data-grade="1">
-                        <i class="fas fa-child"></i>
-                        一年级
-                        <span>识字、拼音、基础汉字</span>
-                    </button>
-                    <button class="grade-btn" data-grade="2">
-                        <i class="fas fa-user-graduate"></i>
-                        二年级
-                        <span>词语积累、简单阅读</span>
-                    </button>
-                    <button class="grade-btn" data-grade="3">
-                        <i class="fas fa-book-reader"></i>
-                        三年级
-                        <span>段落理解、写作基础</span>
-                    </button>
-                    <button class="grade-btn" data-grade="4">
-                        <i class="fas fa-pencil-alt"></i>
-                        四年级
-                        <span>阅读理解、作文训练</span>
-                    </button>
-                    <button class="grade-btn" data-grade="5">
-                        <i class="fas fa-feather-alt"></i>
-                        五年级
-                        <span>文言文基础、复杂阅读</span>
-                    </button>
-                    <button class="grade-btn" data-grade="6">
-                        <i class="fas fa-award"></i>
-                        六年级
-                        <span>综合运用、升学准备</span>
-                    </button>
+                <h2><i class="fas fa-school"></i> 选择年级和学期开始学习</h2>
+                
+                <!-- 一年级 -->
+                <div class="grade-category">
+                    <h3 class="category-title"><i class="fas fa-child"></i> 一年级</h3>
+                    <div class="grade-buttons">
+                        <button class="grade-btn semester-1" data-grade="1-1">
+                            <i class="fas fa-book"></i>
+                            一年级上册
+                            <span>识字、拼音、基础汉字</span>
+                        </button>
+                        <button class="grade-btn semester-2" data-grade="1-2">
+                            <i class="fas fa-book"></i>
+                            一年级下册
+                            <span>词语积累、简单阅读</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 二年级 -->
+                <div class="grade-category">
+                    <h3 class="category-title"><i class="fas fa-user-graduate"></i> 二年级</h3>
+                    <div class="grade-buttons">
+                        <button class="grade-btn semester-1" data-grade="2-1">
+                            <i class="fas fa-book"></i>
+                            二年级上册
+                            <span>词语积累、简单阅读</span>
+                        </button>
+                        <button class="grade-btn semester-2" data-grade="2-2">
+                            <i class="fas fa-book"></i>
+                            二年级下册
+                            <span>段落理解、写作基础</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 三年级 -->
+                <div class="grade-category">
+                    <h3 class="category-title"><i class="fas fa-book-reader"></i> 三年级</h3>
+                    <div class="grade-buttons">
+                        <button class="grade-btn semester-1" data-grade="3-1">
+                            <i class="fas fa-book"></i>
+                            三年级上册
+                            <span>段落理解、写作基础</span>
+                        </button>
+                        <button class="grade-btn semester-2" data-grade="3-2">
+                            <i class="fas fa-book"></i>
+                            三年级下册
+                            <span>阅读理解、作文训练</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 四年级 -->
+                <div class="grade-category">
+                    <h3 class="category-title"><i class="fas fa-pencil-alt"></i> 四年级</h3>
+                    <div class="grade-buttons">
+                        <button class="grade-btn semester-1" data-grade="4-1">
+                            <i class="fas fa-book"></i>
+                            四年级上册
+                            <span>阅读理解、作文训练</span>
+                        </button>
+                        <button class="grade-btn semester-2" data-grade="4-2">
+                            <i class="fas fa-book"></i>
+                            四年级下册
+                            <span>文言文基础、复杂阅读</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 五年级 -->
+                <div class="grade-category">
+                    <h3 class="category-title"><i class="fas fa-feather-alt"></i> 五年级</h3>
+                    <div class="grade-buttons">
+                        <button class="grade-btn semester-1" data-grade="5-1">
+                            <i class="fas fa-book"></i>
+                            五年级上册
+                            <span>文言文基础、复杂阅读</span>
+                        </button>
+                        <button class="grade-btn semester-2" data-grade="5-2">
+                            <i class="fas fa-book"></i>
+                            五年级下册
+                            <span>综合运用、升学准备</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 六年级 -->
+                <div class="grade-category">
+                    <h3 class="category-title"><i class="fas fa-award"></i> 六年级</h3>
+                    <div class="grade-buttons">
+                        <button class="grade-btn semester-1" data-grade="6-1">
+                            <i class="fas fa-book"></i>
+                            六年级上册
+                            <span>综合运用、升学准备</span>
+                        </button>
+                        <button class="grade-btn semester-2" data-grade="6-2">
+                            <i class="fas fa-book"></i>
+                            六年级下册
+                            <span>总复习、升学冲刺</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -382,7 +558,19 @@
             // 更新页面标题
             document.title = "小学语文生字学习系统 - 首页";
             
-            // 可以在这里添加更多初始化代码
+            // 检查图片是否加载失败
+            document.querySelectorAll('.promotion-image img').forEach(img => {
+                img.onerror = function() {
+                    // 如果图片加载失败，显示替代内容
+                    const parent = this.parentElement;
+                    parent.innerHTML = `
+                        <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#ff9966,#ff5e62);color:white;font-size:1.2rem;text-align:center;padding:10px;">
+                            扫码关注<br>获取更多资源
+                        </div>
+                    `;
+                };
+            });
+            
             console.log("小学语文生字学习系统首页已加载");
         });
     </script>
