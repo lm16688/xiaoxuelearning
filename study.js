@@ -94,7 +94,7 @@ document.addEventListener('DOMContentLoaded', function() {
             {character: "你", pinyin: "nǐ", wordGroups: ["你好", "你们"], sentence: "你们好，新同学！"},
             {character: "我", pinyin: "wǒ", wordGroups: ["我们", "自我"], sentence: "我们是一年级学生。"}
         ];
-    }**
+    }**/
     
     // 加载学习进度
     function loadLearningProgress() {
