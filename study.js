@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let masteredCharacters = [];
     
     // 初始化
-   function init() {
+    async function init() {
         // 从localStorage获取选择的年级
         currentGrade = localStorage.getItem('selectedGrade') || '一年级上册';
         gradeTitle.textContent = currentGrade + ' 生字学习';
@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // 获取演示数据（作为后备）
-    async function getDemoData() {
+    function getDemoData() {
         return [
             {character: "天", pinyin: "tiān", wordGroups: ["天空", "今天"], sentence: "蓝蓝的天空像大海。"},
             {character: "地", pinyin: "dì", wordGroups: ["大地", "土地"], sentence: "大地妈妈真温暖。"},
