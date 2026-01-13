@@ -898,7 +898,7 @@
       },
       {
         "word": "站",
-        "pinyin": "zuò",
+        "pinyin": "zhàn",
         "words": ["站立", "车站"],
         "sentence": "车站等公交。"
       },
@@ -2851,19 +2851,7 @@
         "pinyin": "pì",
         "words": ["僻静", "怪僻"],
         "sentence": "僻静的小路。"
-      }
-      {
-        "word": "幅",
-        "pinyin": "fú",
-        "words": ["一幅", "幅度"],
-        "sentence": "墙上挂着一幅画。"
-      }
-      {
-        "word": "画",
-        "pinyin": "huà",
-        "words": ["图画", "画家"],
-        "sentence": "画家描绘家乡美。"
-      }
+      }      
     ]
   },
 
