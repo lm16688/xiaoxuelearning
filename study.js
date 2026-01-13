@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let masteredCharacters = [];
     
     // 初始化
-   function init() {
+   async function init() {
         // 从localStorage获取选择的年级
         currentGrade = localStorage.getItem('selectedGrade') || '一年级上册';
         gradeTitle.textContent = currentGrade + ' 生字学习';
@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // 加载生字数据
-    function loadCharactersData() {
+    async function loadCharactersData() {
         try {
             // 从data.json文件加载数据
             const response = await fetch('data.json');
