@@ -28,13 +28,13 @@ document.addEventListener('DOMContentLoaded', function() {
     let masteredCharacters = [];
     
     // 初始化
-    function init() {
+    async function init() {
         // 从localStorage获取选择的年级
         currentGrade = localStorage.getItem('selectedGrade') || '一年级上册';
         gradeTitle.textContent = currentGrade + ' 生字学习';
         
         // 从JSON文件加载生字数据
-        loadCharactersData();
+        await loadCharactersData();
         
         // 从localStorage加载学习进度
         loadLearningProgress();
@@ -45,21 +45,47 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // 加载生字数据
-    function loadCharactersData() {
-        // 实际使用时，这里应该从data.json文件加载
-        // 为了演示，我们使用硬编码数据
-        const demoData = {
+    async function loadCharactersData() {
+        try {
+            // 从data.json文件加载数据
+            const response = await fetch('data.json');
+            if (!response.ok) {
+                throw new Error(`HTTP错误! 状态: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            
+            // 设置当前年级的数据
+            charactersData = data.grades[currentGrade] || [];
+            
+            if (charactersData.length === 0) {
+                console.warn(`年级"${currentGrade}"没有找到数据，使用演示数据`);
+                // 如果没有找到对应年级的数据，使用演示数据作为后备
+                charactersData = getDemoData()[currentGrade] || getDemoData()["一年级上册"];
+            }
+            
+            // 更新显示
+            updateDisplay();
+            updateStats();
+            
+        } catch (error) {
+            console.error('加载数据失败:', error);
+            // 使用演示数据作为后备
+            charactersData = getDemoData()[currentGrade] || getDemoData()["一年级上册"];
+            updateDisplay();
+            updateStats();
+        }
+    }
+    
+    // 获取演示数据（作为后备）
+    function getDemoData() {
+        return {
             "一年级上册": [
                 {character: "天", pinyin: "tiān", wordGroups: ["天空", "今天"], sentence: "蓝蓝的天空像大海。"},
                 {character: "地", pinyin: "dì", wordGroups: ["大地", "土地"], sentence: "大地妈妈真温暖。"},
                 {character: "人", pinyin: "rén", wordGroups: ["人们", "好人"], sentence: "人们都在努力工作。"},
                 {character: "你", pinyin: "nǐ", wordGroups: ["你好", "你们"], sentence: "你们好，新同学！"},
-                {character: "我", pinyin: "wǒ", wordGroups: ["我们", "自我"], sentence: "我们是一年级学生。"},
-                {character: "他", pinyin: "tā", wordGroups: ["他人", "他日"], sentence: "他人需要帮助。"},
-                {character: "一", pinyin: "yī", wordGroups: ["一个", "一人"], sentence: "一个太阳照大地。"},
-                {character: "二", pinyin: "èr", wordGroups: ["二月", "二手"], sentence: "二月春风似剪刀。"},
-                {character: "三", pinyin: "sān", wordGroups: ["三个", "三天"], sentence: "三天后见。"},
-                {character: "四", pinyin: "sì", wordGroups: ["四方", "四月"], sentence: "四月花开香满园。"}
+                {character: "我", pinyin: "wǒ", wordGroups: ["我们", "自我"], sentence: "我们是一年级学生。"}
             ],
             "一年级下册": [
                 {character: "春", pinyin: "chūn", wordGroups: ["春风", "春天"], sentence: "春风吹绿了柳枝"},
@@ -69,27 +95,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 {character: "花", pinyin: "huā", wordGroups: ["花朵", "开花"], sentence: "花园里百花盛开"}
             ]
         };
-        
-        // 设置当前年级的数据
-        charactersData = demoData[currentGrade] || demoData["一年级上册"];
-        
-        // 在实际应用中，应该使用fetch从JSON文件加载
-        /*
-        fetch('data.json')
-            .then(response => response.json())
-            .then(data => {
-                charactersData = data.grades[currentGrade] || [];
-                updateDisplay();
-                updateStats();
-            })
-            .catch(error => {
-                console.error('加载数据失败:', error);
-                // 使用演示数据作为后备
-                charactersData = demoData[currentGrade] || demoData["一年级上册"];
-                updateDisplay();
-                updateStats();
-            });
-        */
     }
     
     // 加载学习进度
