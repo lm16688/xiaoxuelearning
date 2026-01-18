@@ -867,22 +867,17 @@
                         <input type="range" id="grid-gap" class="range-slider" min="5" max="50" value="20" step="5">
                     </div>
                     
-                    <div class="control-group">
-                        <label>
-                            网格线颜色:
-                            <input type="color" id="grid-color" value="#cccccc" style="width:100%;height:35px;margin-top:5px;">
-                        </label>
-                    </div>
+                   
                     
                     <div class="control-group">
                         <label>网格类型:</label>
                         <select id="grid-type" class="select-control">
                             <option value="square">田字格</option>
-                            <option value="tian">田字格（加强版）</option>
+                          
                             <option value="cross">十字格</option>
-                            <option value="nine">九宫格</option>
+                           
                             <option value="rice">米字格</option>
-                            <option value="none">无网格</option>
+                           
                         </select>
                     </div>
                 </div>
@@ -930,38 +925,7 @@
                 
                 <!-- 3. 显示选项 -->
                 <div class="settings-section">
-                    <h3 class="section-title"><i class="fas fa-eye"></i> 显示选项</h3>
-                    
-                    <div class="checkbox-group">
-                        <input type="checkbox" id="show-pinyin" checked>
-                        <label for="show-pinyin">显示拼音</label>
-                    </div>
-                    
-                    <div class="checkbox-group">
-                        <input type="checkbox" id="show-stroke-order" checked>
-                        <label for="show-stroke-order">显示笔顺</label>
-                    </div>
-                    
-                    <div class="checkbox-group">
-                        <input type="checkbox" id="show-words" checked>
-                        <label for="show-words">显示组词</label>
-                    </div>
-                    
-                    <div class="checkbox-group">
-                        <input type="checkbox" id="show-stroke-count">
-                        <label for="show-stroke-count">显示笔画数</label>
-                    </div>
-                    
-                    <div class="control-group">
-                        <label>每行字数:</label>
-                        <select id="chars-per-row" class="select-control">
-                            <option value="2">2个字</option>
-                            <option value="3" selected>3个字</option>
-                            <option value="4">4个字</option>
-                            <option value="5">5个字</option>
-                            <option value="6">6个字</option>
-                        </select>
-                    </div>
+                   
                     
                     <div class="control-group">
                         <label>每页显示:</label>
@@ -1000,5 +964,8 @@
     <!-- 引入SheetJS库处理Excel文件 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="copybook.js"></script>
+    <!-- 在原有脚本之后添加 -->
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </body>
 </html>
