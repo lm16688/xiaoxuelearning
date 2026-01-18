@@ -187,17 +187,19 @@ async function main() {
             });
             
             // 方格大小滑块
-            if (elements.gridSizeSlider) {
-                elements.gridSizeSlider.addEventListener('input', function() {
-                    if (elements.gridSizeValue) {
-                        elements.gridSizeValue.textContent = this.value;
-                    }
-                    settings.gridSize = parseInt(this.value);
-                    if (currentCopybookData.length > 0) {
-                        generateCopybookContent();
-                    }
-                });
-            }
+           // 方格大小滑块
+if (elements.gridSizeSlider) {
+    elements.gridSizeSlider.addEventListener('input', function() {
+        if (elements.gridSizeValue) {
+            elements.gridSizeValue.textContent = this.value;
+        }
+        settings.gridSize = parseInt(this.value);
+        if (currentCopybookData.length > 0) {
+            // 重新生成内容时更新单元格高度
+            generateCopybookContent();
+        }
+    });
+}
             
             // 每行字数滑块
             if (elements.charsPerRowSlider) {
@@ -545,299 +547,284 @@ async function main() {
         }
         
         // 生成字帖
-        function generateCopybook(title) {
-            console.log('开始生成字帖，标题:', title, '数据量:', currentCopybookData.length);
-            
-            if (currentCopybookData.length === 0) {
-                alert('没有可用的生字数据');
-                return;
-            }
-            
-            // 显示加载提示
-            if (elements.loadingOverlay) {
-                elements.loadingOverlay.classList.add('show');
-            }
-            
-            // 使用setTimeout确保UI更新
-            setTimeout(() => {
-                try {
-                    // 更新标题
-                    if (elements.previewTitle) {
-                        elements.previewTitle.textContent = title;
-                    }
-                    
-                    // 生成字帖内容
-                    generateCopybookContent();
-                    
-                    // 显示预览区域
-                    if (elements.copybookPreview) {
-                        elements.copybookPreview.classList.add('show');
-                    }
-                    
-                    // 滚动到预览区域
-                    if (elements.copybookPreview) {
-                        elements.copybookPreview.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }
-                    
-                    console.log('字帖生成完成');
-                    
-                } catch (error) {
-                    console.error('生成字帖失败:', error);
-                    alert('生成字帖时出错，请重试');
-                } finally {
-                    // 确保隐藏加载提示
-                    setTimeout(() => {
-                        if (elements.loadingOverlay) {
-                            elements.loadingOverlay.classList.remove('show');
-                        }
-                    }, 300);
-                }
-            }, 100);
-        }
+        // 生成字帖内容 - 改为真正的田字格本子样式
+function generateCopybookContent() {
+    console.log('生成字帖内容...');
+    if (currentCopybookData.length === 0) return;
+    
+    try {
+        // 清空内容
+        elements.copybookGrid.innerHTML = '';
         
-        // 生成字帖内容
-        function generateCopybookContent() {
-            console.log('生成字帖内容...');
-            if (currentCopybookData.length === 0) return;
+        // 计算每页字数
+        const charsPerRow = settings.charsPerRow;
+        const pageRows = settings.pageRows;
+        const charsPerPage = charsPerRow * pageRows;
+        const totalPages = Math.ceil(currentCopybookData.length / charsPerPage);
+        
+        console.log('总页数:', totalPages, '每页字数:', charsPerPage);
+        
+        // 创建分页容器
+        const paginationContainer = document.createElement('div');
+        paginationContainer.className = 'pagination-container';
+        paginationContainer.style.position = 'relative';
+        paginationContainer.style.minHeight = '500px';
+        
+        // 创建分页内容
+        const pagesContainer = document.createElement('div');
+        pagesContainer.className = 'pages-container';
+        pagesContainer.style.display = 'flex';
+        pagesContainer.style.overflow = 'hidden';
+        pagesContainer.style.position = 'relative';
+        pagesContainer.style.width = '100%';
+        
+        // 创建分页
+        for (let page = 0; page < totalPages; page++) {
+            const pageElement = document.createElement('div');
+            pageElement.className = 'copybook-page';
+            pageElement.dataset.page = page + 1;
+            pageElement.style.flex = '0 0 100%';
+            pageElement.style.width = '100%';
+            pageElement.style.padding = '30px';
+            pageElement.style.backgroundColor = '#fff';
+            pageElement.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
+            pageElement.style.borderRadius = '8px';
+            pageElement.style.marginBottom = '20px';
+            pageElement.style.boxSizing = 'border-box';
             
-            try {
-                // 清空内容
-                elements.copybookGrid.innerHTML = '';
+            // 页面标题
+            const titleElement = document.createElement('div');
+            titleElement.className = 'page-title';
+            titleElement.style.textAlign = 'center';
+            titleElement.style.marginBottom = '25px';
+            titleElement.style.paddingBottom = '15px';
+            titleElement.style.borderBottom = '2px solid #f0f0f0';
+            titleElement.innerHTML = `
+                <h3 style="color:#4a6fa5;margin:0 0 8px 0;font-size:24px;">${elements.previewTitle ? elements.previewTitle.textContent : '字帖'}</h3>
+                <p style="color:#666;margin:5px 0;font-size:14px;">规范楷体硬笔字帖 - 共 ${currentCopybookData.length} 个生字</p>
+                <p style="color:#999;margin:5px 0;font-size:12px;">第 ${page + 1} 页 / 共 ${totalPages} 页 - 日期: ${new Date().toLocaleDateString('zh-CN')}</p>
+            `;
+            pageElement.appendChild(titleElement);
+            
+            // 创建田字格表格
+            const tableContainer = document.createElement('div');
+            tableContainer.className = 'table-container';
+            tableContainer.style.width = '100%';
+            
+            // 计算当前页的生字
+            const startIndex = page * charsPerPage;
+            const endIndex = Math.min(startIndex + charsPerPage, currentCopybookData.length);
+            const pageCharacters = currentCopybookData.slice(startIndex, endIndex);
+            
+            // 创建表格行
+            for (let row = 0; row < pageRows; row++) {
+                const tableRow = document.createElement('div');
+                tableRow.className = 'table-row';
+                tableRow.style.display = 'flex';
+                tableRow.style.width = '100%';
+                tableRow.style.borderTop = '1px solid #ccc';
                 
-                // 计算每页字数
-                const charsPerPage = settings.charsPerRow * settings.pageRows;
-                const totalPages = Math.ceil(currentCopybookData.length / charsPerPage);
+                // 每行的最后一个单元格需要特殊处理
+                if (row === pageRows - 1) {
+                    tableRow.style.borderBottom = '1px solid #ccc';
+                }
                 
-                console.log('总页数:', totalPages, '每页字数:', charsPerPage);
-                
-                // 创建字帖内容容器
-                const copybookContainer = document.createElement('div');
-                copybookContainer.className = 'copybook-content';
-                copybookContainer.style.padding = '20px';
-                copybookContainer.style.backgroundColor = '#fff';
-                copybookContainer.style.borderRadius = '8px';
-                
-                // 创建分页
-                for (let page = 0; page < totalPages; page++) {
-                    const pageElement = document.createElement('div');
-                    pageElement.className = 'copybook-page';
+                // 创建表格单元格
+                for (let col = 0; col < charsPerRow; col++) {
+                    const tableCell = document.createElement('div');
+                    tableCell.className = 'table-cell';
+                    tableCell.style.flex = '1';
+                    tableCell.style.position = 'relative';
+                    tableCell.style.height = `${settings.gridSize}px`;
+                    tableCell.style.borderRight = '1px solid #ccc';
+                    tableCell.style.boxSizing = 'border-box';
                     
-                    // 添加页面标题（仅第一页）
-                    if (page === 0) {
-                        const titleElement = document.createElement('div');
-                        titleElement.className = 'copybook-title';
-                        titleElement.innerHTML = `
-                            <h3>${elements.previewTitle ? elements.previewTitle.textContent : '字帖'}</h3>
-                            <p>规范楷体硬笔字帖 - 共 ${currentCopybookData.length} 个生字 - 第 ${page + 1}/${totalPages} 页</p>
-                            <p>日期: ${new Date().toLocaleDateString('zh-CN')}</p>
+                    // 每行的最后一个单元格
+                    if (col === charsPerRow - 1) {
+                        tableCell.style.borderRight = 'none';
+                    }
+                    
+                    // 创建田字格背景
+                    const tianziGrid = document.createElement('div');
+                    tianziGrid.className = 'tianzi-grid';
+                    tianziGrid.style.position = 'absolute';
+                    tianziGrid.style.top = '0';
+                    tianziGrid.style.left = '0';
+                    tianziGrid.style.width = '100%';
+                    tianziGrid.style.height = '100%';
+                    tianziGrid.style.pointerEvents = 'none';
+                    
+                    // 根据网格类型设置不同的背景
+                    if (settings.gridType === 'tianzi') {
+                        // 田字格：十字线
+                        tianziGrid.style.cssText = `
+                            position: absolute;
+                            top: 0;
+                            left: 0;
+                            width: 100%;
+                            height: 100%;
+                            background-image: 
+                                linear-gradient(to right, #ddd 1px, transparent 1px),
+                                linear-gradient(to bottom, #ddd 1px, transparent 1px);
+                            background-size: 50% 100%, 100% 50%;
+                            background-position: 50% 0, 0 50%;
+                            pointer-events: none;
                         `;
-                        pageElement.appendChild(titleElement);
+                    } else if (settings.gridType === 'mizi') {
+                        // 米字格：十字线+对角线
+                        tianziGrid.style.cssText = `
+                            position: absolute;
+                            top: 0;
+                            left: 0;
+                            width: 100%;
+                            height: 100%;
+                            background-image: 
+                                linear-gradient(to right, #ddd 1px, transparent 1px),
+                                linear-gradient(to bottom, #ddd 1px, transparent 1px),
+                                linear-gradient(45deg, #eee 1px, transparent 1px),
+                                linear-gradient(-45deg, #eee 1px, transparent 1px);
+                            background-size: 50% 100%, 100% 50%, 100% 100%, 100% 100%;
+                            background-position: 50% 0, 0 50%, 0 0, 0 0;
+                            pointer-events: none;
+                        `;
                     }
                     
-                    // 创建网格容器 - 去除列间距
-                    const gridContainer = document.createElement('div');
-                    gridContainer.className = 'copybook-grid-container';
-                    gridContainer.style.display = 'grid';
-                    gridContainer.style.gridTemplateColumns = `repeat(${settings.charsPerRow}, 1fr)`;
-                    gridContainer.style.gap = '0'; // 去掉列间距
-                    gridContainer.style.marginTop = '20px';
+                    tableCell.appendChild(tianziGrid);
                     
-                    // 计算当前页的生字
-                    const startIndex = page * charsPerPage;
-                    const endIndex = Math.min(startIndex + charsPerPage, currentCopybookData.length);
-                    const pageCharacters = currentCopybookData.slice(startIndex, endIndex);
+                    // 计算当前单元格对应的生字索引
+                    const charIndex = row * charsPerRow + col;
+                    const charData = pageCharacters[charIndex];
                     
-                    console.log(`第${page + 1}页: ${startIndex + 1}-${endIndex} 共${pageCharacters.length}个字`);
-                    
-                    // 添加每个生字的字帖单元格
-                    pageCharacters.forEach((item, index) => {
-                        // 每行的第一个单元格显示生字，其余为空白练习格
-                        const isFirstInRow = (index % settings.charsPerRow) === 0;
+                    if (charData && col === 0) {
+                        // 每行第一个单元格显示生字
+                        const characterDiv = document.createElement('div');
+                        characterDiv.className = 'character-display';
+                        characterDiv.style.position = 'absolute';
+                        characterDiv.style.top = '50%';
+                        characterDiv.style.left = '50%';
+                        characterDiv.style.transform = 'translate(-50%, -50%)';
+                        characterDiv.style.zIndex = '1';
+                        characterDiv.style.fontFamily = settings.fontFamily;
+                        characterDiv.style.fontSize = `${settings.fontSize}px`;
+                        characterDiv.style.fontWeight = settings.fontWeight;
+                        characterDiv.style.color = '#333';
+                        characterDiv.style.textAlign = 'center';
+                        characterDiv.textContent = charData.character;
                         
-                        const characterCell = document.createElement('div');
-                        characterCell.className = 'character-cell';
-                        characterCell.style.width = `${settings.gridSize}px`;
-                        characterCell.style.height = `${settings.gridSize}px`;
-                        characterCell.style.position = 'relative';
-                        
-                        // 创建正确的田字格或米字格背景
-                        const gridBackground = document.createElement('div');
-                        gridBackground.className = 'grid-background';
-                        
-                        // 根据选择的网格类型设置不同的背景
-                        if (settings.gridType === 'tianzi') {
-                            // 田字格样式
-                            gridBackground.style.cssText = `
-                                position: absolute;
-                                top: 0;
-                                left: 0;
-                                width: 100%;
-                                height: 100%;
-                                background-image: 
-                                    linear-gradient(to right, #e0e0e0 1px, transparent 1px),
-                                    linear-gradient(to bottom, #e0e0e0 1px, transparent 1px),
-                                    linear-gradient(to right, #ddd 1px, transparent 1px),
-                                    linear-gradient(to bottom, #ddd 1px, transparent 1px);
-                                background-size: 50% 100%, 100% 50%, 100% 100%, 100% 100%;
-                                background-position: 50% 0, 0 50%, 0 0, 0 0;
-                                pointer-events: none;
-                            `;
-                        } else if (settings.gridType === 'mizi') {
-                            // 米字格样式
-                            gridBackground.style.cssText = `
-                                position: absolute;
-                                top: 0;
-                                left: 0;
-                                width: 100%;
-                                height: 100%;
-                                background-image: 
-                                    linear-gradient(to right, #e0e0e0 1px, transparent 1px),
-                                    linear-gradient(to bottom, #e0e0e0 1px, transparent 1px),
-                                    linear-gradient(to right, #ddd 1px, transparent 1px),
-                                    linear-gradient(to bottom, #ddd 1px, transparent 1px),
-                                    linear-gradient(45deg, #eee 1px, transparent 1px),
-                                    linear-gradient(-45deg, #eee 1px, transparent 1px);
-                                background-size: 50% 100%, 100% 50%, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
-                                background-position: 50% 0, 0 50%, 0 0, 0 0, 0 0, 0 0;
-                                pointer-events: none;
-                            `;
-                        }
-                        
-                        characterCell.appendChild(gridBackground);
-                        
-                        if (isFirstInRow) {
-                            // 每行第一个格子显示生字
-                            const characterContent = document.createElement('div');
-                            characterContent.className = 'character-content';
-                            characterContent.style.position = 'relative';
-                            characterContent.style.zIndex = '1';
-                            characterContent.style.width = '100%';
-                            characterContent.style.height = '100%';
-                            characterContent.style.display = 'flex';
-                            characterContent.style.flexDirection = 'column';
-                            characterContent.style.alignItems = 'center';
-                            characterContent.style.justifyContent = 'center';
-                            
-                            // 添加生字
-                            const characterElement = document.createElement('div');
-                            characterElement.className = 'copybook-char';
-                            characterElement.textContent = item.character;
-                            characterElement.style.fontFamily = settings.fontFamily;
-                            characterElement.style.fontSize = `${settings.fontSize}px`;
-                            characterElement.style.fontWeight = settings.fontWeight;
-                            characterElement.style.color = '#333';
-                            characterElement.style.lineHeight = '1';
-                            characterElement.style.textAlign = 'center';
-                            characterContent.appendChild(characterElement);
-                            
-                            characterCell.appendChild(characterContent);
-                        } else {
-                            // 其他格子为空白练习格
-                            characterCell.innerHTML = '<div style="color:#999;font-size:12px;">练习格</div>';
-                        }
-                        
-                        gridContainer.appendChild(characterCell);
-                    });
-                    
-                    // 如果当前页不是满页，填充空白单元格
-                    const remainingCells = charsPerPage - pageCharacters.length;
-                    for (let i = 0; i < remainingCells; i++) {
-                        const emptyCell = document.createElement('div');
-                        emptyCell.className = 'character-cell';
-                        emptyCell.style.width = `${settings.gridSize}px`;
-                        emptyCell.style.height = `${settings.gridSize}px`;
-                        emptyCell.style.position = 'relative';
-                        
-                        // 添加网格背景
-                        const gridBackground = document.createElement('div');
-                        gridBackground.className = 'grid-background';
-                        
-                        if (settings.gridType === 'tianzi') {
-                            gridBackground.style.cssText = `
-                                position: absolute;
-                                top: 0;
-                                left: 0;
-                                width: 100%;
-                                height: 100%;
-                                background-image: 
-                                    linear-gradient(to right, #e0e0e0 1px, transparent 1px),
-                                    linear-gradient(to bottom, #e0e0e0 1px, transparent 1px),
-                                    linear-gradient(to right, #ddd 1px, transparent 1px),
-                                    linear-gradient(to bottom, #ddd 1px, transparent 1px);
-                                background-size: 50% 100%, 100% 50%, 100% 100%, 100% 100%;
-                                background-position: 50% 0, 0 50%, 0 0, 0 0;
-                                pointer-events: none;
-                            `;
-                        } else if (settings.gridType === 'mizi') {
-                            gridBackground.style.cssText = `
-                                position: absolute;
-                                top: 0;
-                                left: 0;
-                                width: 100%;
-                                height: 100%;
-                                background-image: 
-                                    linear-gradient(to right, #e0e0e0 1px, transparent 1px),
-                                    linear-gradient(to bottom, #e0e0e0 1px, transparent 1px),
-                                    linear-gradient(to right, #ddd 1px, transparent 1px),
-                                    linear-gradient(to bottom, #ddd 1px, transparent 1px),
-                                    linear-gradient(45deg, #eee 1px, transparent 1px),
-                                    linear-gradient(-45deg, #eee 1px, transparent 1px);
-                                background-size: 50% 100%, 100% 50%, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
-                                background-position: 50% 0, 0 50%, 0 0, 0 0, 0 0, 0 0;
-                                pointer-events: none;
-                            `;
-                        }
-                        
-                        emptyCell.appendChild(gridBackground);
-                        emptyCell.innerHTML += '<div style="color:#999;font-size:12px;position:relative;z-index:1;">练习格</div>';
-                        gridContainer.appendChild(emptyCell);
+                        tableCell.appendChild(characterDiv);
                     }
                     
-                    pageElement.appendChild(gridContainer);
-                    copybookContainer.appendChild(pageElement);
-                    
-                    // 如果不是最后一页，添加分页符
-                    if (page < totalPages - 1) {
-                        const pageBreak = document.createElement('div');
-                        pageBreak.style.pageBreakAfter = 'always';
-                        pageBreak.style.marginBottom = '50px';
-                        copybookContainer.appendChild(pageBreak);
-                    }
+                    tableRow.appendChild(tableCell);
                 }
                 
-                // 应用行间距
-                const allRows = copybookContainer.querySelectorAll('.copybook-grid-container');
-                allRows.forEach(row => {
-                    row.style.marginBottom = `${settings.rowSpacing}px`;
-                });
-                
-                // 添加内容到页面
-                elements.copybookGrid.appendChild(copybookContainer);
-                
-                console.log('字帖内容生成完成');
-                
-            } catch (error) {
-                console.error('生成字帖内容失败:', error);
-                throw error;
+                tableContainer.appendChild(tableRow);
             }
+            
+            pageElement.appendChild(tableContainer);
+            pagesContainer.appendChild(pageElement);
         }
         
-        // 估算笔画数（简单版本）
-        function estimateStrokeCount(character) {
-            // 常见汉字笔画数映射
-            const strokeMap = {
-                '一': 1, '二': 2, '三': 3, '四': 5, '五': 4,
-                '六': 4, '七': 2, '八': 2, '九': 2, '十': 2,
-                '天': 4, '地': 6, '人': 2, '你': 7, '我': 7,
-                '他': 5, '春': 9, '夏': 10, '秋': 9, '冬': 5,
-                '日': 4, '月': 4, '水': 4, '火': 4, '土': 3,
-                '木': 4, '金': 8, '山': 3, '石': 5, '田': 5,
-                '上': 3, '下': 3, '中': 4, '大': 3, '小': 3,
-                '学': 8, '生': 5, '字': 6, '文': 4, '语': 9
-            };
+        // 添加分页控制
+        if (totalPages > 1) {
+            const paginationControls = document.createElement('div');
+            paginationControls.className = 'pagination-controls';
+            paginationControls.style.display = 'flex';
+            paginationControls.style.justifyContent = 'center';
+            paginationControls.style.alignItems = 'center';
+            paginationControls.style.marginTop = '25px';
+            paginationControls.style.gap = '15px';
             
-            return strokeMap[character] || Math.floor(Math.random() * 10) + 3;
+            // 上一页按钮
+            const prevButton = document.createElement('button');
+            prevButton.className = 'page-btn prev-btn';
+            prevButton.innerHTML = '<i class="fas fa-chevron-left"></i> 上一页';
+            prevButton.disabled = true;
+            prevButton.style.padding = '10px 20px';
+            prevButton.style.backgroundColor = '#4a6fa5';
+            prevButton.style.color = 'white';
+            prevButton.style.border = 'none';
+            prevButton.style.borderRadius = '6px';
+            prevButton.style.cursor = 'pointer';
+            prevButton.style.fontSize = '14px';
+            
+            // 页码显示
+            const pageInfo = document.createElement('span');
+            pageInfo.className = 'page-info';
+            pageInfo.textContent = `第 1 页 / 共 ${totalPages} 页`;
+            pageInfo.style.fontSize = '14px';
+            pageInfo.style.color = '#666';
+            
+            // 下一页按钮
+            const nextButton = document.createElement('button');
+            nextButton.className = 'page-btn next-btn';
+            nextButton.innerHTML = '下一页 <i class="fas fa-chevron-right"></i>';
+            nextButton.disabled = totalPages <= 1;
+            nextButton.style.padding = '10px 20px';
+            nextButton.style.backgroundColor = totalPages > 1 ? '#4a6fa5' : '#cccccc';
+            nextButton.style.color = 'white';
+            nextButton.style.border = 'none';
+            nextButton.style.borderRadius = '6px';
+            nextButton.style.cursor = totalPages > 1 ? 'pointer' : 'not-allowed';
+            nextButton.style.fontSize = '14px';
+            
+            // 分页按钮事件
+            let currentPageIndex = 0;
+            
+            prevButton.addEventListener('click', function() {
+                if (currentPageIndex > 0) {
+                    currentPageIndex--;
+                    updatePageDisplay();
+                }
+            });
+            
+            nextButton.addEventListener('click', function() {
+                if (currentPageIndex < totalPages - 1) {
+                    currentPageIndex++;
+                    updatePageDisplay();
+                }
+            });
+            
+            function updatePageDisplay() {
+                // 移动页面容器
+                pagesContainer.style.transform = `translateX(-${currentPageIndex * 100}%)`;
+                pagesContainer.style.transition = 'transform 0.3s ease';
+                
+                // 更新页码信息
+                pageInfo.textContent = `第 ${currentPageIndex + 1} 页 / 共 ${totalPages} 页`;
+                
+                // 更新按钮状态
+                prevButton.disabled = currentPageIndex === 0;
+                nextButton.disabled = currentPageIndex === totalPages - 1;
+                
+                prevButton.style.backgroundColor = currentPageIndex === 0 ? '#cccccc' : '#4a6fa5';
+                nextButton.style.backgroundColor = currentPageIndex === totalPages - 1 ? '#cccccc' : '#4a6fa5';
+                prevButton.style.cursor = currentPageIndex === 0 ? 'not-allowed' : 'pointer';
+                nextButton.style.cursor = currentPageIndex === totalPages - 1 ? 'not-allowed' : 'pointer';
+            }
+            
+            paginationControls.appendChild(prevButton);
+            paginationControls.appendChild(pageInfo);
+            paginationControls.appendChild(nextButton);
+            
+            paginationContainer.appendChild(pagesContainer);
+            paginationContainer.appendChild(paginationControls);
+        } else {
+            // 只有一页的情况
+            paginationContainer.appendChild(pagesContainer);
         }
+        
+        // 添加内容到页面
+        elements.copybookGrid.appendChild(paginationContainer);
+        
+        console.log('字帖内容生成完成');
+        
+    } catch (error) {
+        console.error('生成字帖内容失败:', error);
+        throw error;
+    }
+}
+        
+        
         
         // 导出为PDF
         async function exportToPDF() {
