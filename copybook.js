@@ -17,6 +17,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const printBtn = document.getElementById('print-btn');
     const applySettingsBtn = document.getElementById('apply-settings');
     
+    // 分页控制元素
+    const paginationControls = document.getElementById('pagination-controls');
+    const prevPageBtn = document.getElementById('prev-page');
+    const nextPageBtn = document.getElementById('next-page');
+    const pageInfo = document.getElementById('page-info');
+    
     // 设置控制元素
     const gridSizeSlider = document.getElementById('grid-size');
     const gridSizeValue = document.getElementById('grid-size-value');
@@ -36,11 +42,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const showWordsCheckbox = document.getElementById('show-words');
     const showStrokeCountCheckbox = document.getElementById('show-stroke-count');
     const charsPerRowSelect = document.getElementById('chars-per-row');
+    const charsPerPageSelect = document.getElementById('chars-per-page');
     
     // 当前字帖数据
     let currentCopybookData = [];
     let currentSource = ''; // 'system' 或 'excel'
     let currentGrade = '';
+    
+    // 分页相关变量
+    let currentPage = 1;
+    let totalPages = 1;
+    let charsPerPage = 24;
     
     // 当前设置
     let currentSettings = {
@@ -116,6 +128,18 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // 应用设置按钮
         applySettingsBtn.addEventListener('click', applySettings);
+        
+        // 分页按钮事件
+        prevPageBtn.addEventListener('click', goToPrevPage);
+        nextPageBtn.addEventListener('click', goToNextPage);
+        
+        // 每页字数选择
+        charsPerPageSelect.addEventListener('change', function() {
+            charsPerPage = parseInt(this.value);
+            if (currentCopybookData.length > 0) {
+                renderCopybook();
+            }
+        });
         
         // 设置滑块和选择器事件
         setupSettingsEvents();
@@ -233,6 +257,7 @@ document.addEventListener('DOMContentLoaded', function() {
         showWordsCheckbox.checked = currentSettings.showWords;
         showStrokeCountCheckbox.checked = currentSettings.showStrokeCount;
         charsPerRowSelect.value = currentSettings.charsPerRow;
+        charsPerPageSelect.value = charsPerPage;
         
         updateFontPreview();
     }
@@ -414,6 +439,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // 清空预览区
         copybookGrid.innerHTML = '';
         
+        // 计算分页
+        calculatePagination();
+        
         // 设置标题
         if (currentSource === 'system') {
             previewTitle.textContent = `${gradeSelect.options[gradeSelect.selectedIndex].text} 生字字帖`;
@@ -424,6 +452,13 @@ document.addEventListener('DOMContentLoaded', function() {
         // 显示预览区
         copybookPreview.classList.add('show');
         
+        // 显示分页控制（如果有多页）
+        if (totalPages > 1) {
+            paginationControls.style.display = 'flex';
+        } else {
+            paginationControls.style.display = 'none';
+        }
+        
         // 创建网格容器
         const gridContainer = document.createElement('div');
         gridContainer.className = 'grid-container';
@@ -432,13 +467,20 @@ document.addEventListener('DOMContentLoaded', function() {
         gridContainer.style.gridTemplateColumns = `repeat(${currentSettings.charsPerRow}, 1fr)`;
         gridContainer.style.gap = `${currentSettings.gridGap}px`;
         
-        // 添加每个汉字
-        currentCopybookData.forEach((item, index) => {
-            const gridItem = createGridItem(item, index);
+        // 计算当前页的数据范围
+        const startIndex = (currentPage - 1) * charsPerPage;
+        const endIndex = Math.min(startIndex + charsPerPage, currentCopybookData.length);
+        
+        // 添加当前页的汉字
+        for (let i = startIndex; i < endIndex; i++) {
+            const gridItem = createGridItem(currentCopybookData[i], i);
             gridContainer.appendChild(gridItem);
-        });
+        }
         
         copybookGrid.appendChild(gridContainer);
+        
+        // 更新分页信息
+        updatePaginationInfo();
     }
     
     // 创建单个网格项
@@ -455,11 +497,24 @@ document.addEventListener('DOMContentLoaded', function() {
         gridInner.className = `grid-inner ${currentSettings.gridType}`;
         
         // 设置网格线颜色
-        if (currentSettings.gridType === 'square') {
-            gridInner.style.borderColor = currentSettings.gridColor;
-        } else if (currentSettings.gridType === 'tian') {
-            gridInner.style.borderColor = currentSettings.gridColor;
-            gridInner.style.backgroundColor = 'transparent';
+        gridInner.style.borderColor = currentSettings.gridColor;
+        gridInner.style.setProperty('--grid-color', currentSettings.gridColor);
+        
+        // 特殊网格类型的额外元素
+        if (currentSettings.gridType === 'nine') {
+            const verticalLine1 = document.createElement('div');
+            verticalLine1.className = 'vertical-line-1';
+            const verticalLine2 = document.createElement('div');
+            verticalLine2.className = 'vertical-line-2';
+            gridInner.appendChild(verticalLine1);
+            gridInner.appendChild(verticalLine2);
+        } else if (currentSettings.gridType === 'rice') {
+            const diagonal1 = document.createElement('div');
+            diagonal1.className = 'diagonal-1';
+            const diagonal2 = document.createElement('div');
+            diagonal2.className = 'diagonal-2';
+            gridInner.appendChild(diagonal1);
+            gridInner.appendChild(diagonal2);
         }
         
         // 添加汉字
@@ -491,7 +546,6 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // 添加笔画数（如果启用）
         if (currentSettings.showStrokeCount) {
-            // 这里使用简单的笔画数估算，实际项目中可能需要完整的笔画数据库
             const strokeCount = estimateStrokeCount(item.character);
             const strokeCountElement = document.createElement('div');
             strokeCountElement.className = 'stroke-count';
@@ -509,6 +563,37 @@ document.addEventListener('DOMContentLoaded', function() {
         
         gridItem.appendChild(gridInner);
         return gridItem;
+    }
+    
+    // 计算分页
+    function calculatePagination() {
+        totalPages = Math.ceil(currentCopybookData.length / charsPerPage);
+        if (currentPage > totalPages) {
+            currentPage = totalPages || 1;
+        }
+    }
+    
+    // 更新分页信息
+    function updatePaginationInfo() {
+        pageInfo.textContent = `第 ${currentPage} 页 / 共 ${totalPages} 页`;
+        prevPageBtn.disabled = currentPage === 1;
+        nextPageBtn.disabled = currentPage === totalPages;
+    }
+    
+    // 上一页
+    function goToPrevPage() {
+        if (currentPage > 1) {
+            currentPage--;
+            renderCopybook();
+        }
+    }
+    
+    // 下一页
+    function goToNextPage() {
+        if (currentPage < totalPages) {
+            currentPage++;
+            renderCopybook();
+        }
     }
     
     // 估算汉字笔画数（简化版）
@@ -531,43 +616,40 @@ document.addEventListener('DOMContentLoaded', function() {
         const printStyles = document.createElement('style');
         printStyles.textContent = `
             @media print {
-                .header, .settings-panel, .file-upload, .controls {
-                    display: none !important;
+                body * {
+                    visibility: hidden;
                 }
                 
-                .preview-section {
-                    width: 100% !important;
-                    margin: 0 !important;
-                    padding: 0 !important;
-                    border: none !important;
-                    box-shadow: none !important;
+                .copybook-preview,
+                .copybook-preview * {
+                    visibility: visible;
                 }
                 
                 .copybook-preview {
-                    display: block !important;
-                    width: 100% !important;
-                    max-width: none !important;
+                    position: absolute;
+                    left: 0;
+                    top: 0;
+                    width: 100%;
                 }
                 
-                .preview-header {
-                    margin-bottom: 20px !important;
+                .settings-panel,
+                .print-controls,
+                .navigation-buttons,
+                .copybook-options,
+                .copybook-header,
+                .footer,
+                .pagination-controls {
+                    display: none !important;
+                }
+                
+                .copybook-grid {
+                    box-shadow: none;
+                    padding: 0;
                 }
                 
                 .grid-container {
                     break-inside: avoid;
                     page-break-inside: avoid;
-                    grid-template-columns: repeat(${currentSettings.charsPerRow}, 1fr) !important;
-                }
-                
-                .grid-item {
-                    width: ${currentSettings.gridSize}px !important;
-                    height: ${currentSettings.gridSize}px !important;
-                }
-                
-                body {
-                    margin: 0 !important;
-                    padding: 20px !important;
-                    font-family: Arial, sans-serif !important;
                 }
                 
                 * {
@@ -580,138 +662,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     size: A4;
                 }
             }
-            
-            /* 田字格特殊样式 */
-            .grid-inner.tian {
-                position: relative;
-                border: 1px solid;
-            }
-            
-            .grid-inner.tian::before,
-            .grid-inner.tian::after {
-                content: '';
-                position: absolute;
-                background-color: var(--grid-color, #cccccc);
-            }
-            
-            .grid-inner.tian::before {
-                top: 0;
-                left: 50%;
-                width: 1px;
-                height: 100%;
-                transform: translateX(-50%);
-            }
-            
-            .grid-inner.tian::after {
-                top: 50%;
-                left: 0;
-                width: 100%;
-                height: 1px;
-                transform: translateY(-50%);
-            }
-            
-            /* 网格项内部元素样式 */
-            .grid-inner {
-                position: relative;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                width: 100%;
-                height: 100%;
-                border: 1px solid;
-            }
-            
-            .character {
-                font-size: var(--font-size, 48px);
-                font-weight: var(--font-weight, 400);
-                color: var(--font-color, #000000);
-                font-family: var(--font-family, "'Ma Shan Zheng', cursive");
-                z-index: 1;
-            }
-            
-            .pinyin {
-                position: absolute;
-                top: 5px;
-                left: 0;
-                right: 0;
-                text-align: center;
-                font-size: 14px;
-                color: #666;
-            }
-            
-            .stroke-order {
-                position: absolute;
-                top: 5px;
-                left: 5px;
-                font-size: 12px;
-                color: #999;
-            }
-            
-            .stroke-count {
-                position: absolute;
-                bottom: 5px;
-                right: 5px;
-                font-size: 12px;
-                color: #999;
-            }
-            
-            .words {
-                position: absolute;
-                bottom: 5px;
-                left: 0;
-                right: 0;
-                text-align: center;
-                font-size: 12px;
-                color: #666;
-            }
         `;
         document.head.appendChild(printStyles);
-    }
-    
-    // 导出字帖为PDF
-    function exportToPDF() {
-        // 这个功能需要html2canvas和jsPDF库
-        // 这里只提供基本思路
-        console.log('PDF导出功能需要额外库支持');
-        
-        // 示例代码：
-        /*
-        html2canvas(copybookPreview).then(canvas => {
-            const imgData = canvas.toDataURL('image/png');
-            const pdf = new jsPDF('p', 'mm', 'a4');
-            const imgWidth = 210;
-            const pageHeight = 295;
-            const imgHeight = canvas.height * imgWidth / canvas.width;
-            let heightLeft = imgHeight;
-            let position = 0;
-            
-            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-            heightLeft -= pageHeight;
-            
-            while (heightLeft >= 0) {
-                position = heightLeft - imgHeight;
-                pdf.addPage();
-                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-                heightLeft -= pageHeight;
-            }
-            
-            pdf.save('字帖.pdf');
-        });
-        */
-    }
-    
-    // 添加导出功能
-    function addExportButton() {
-        const exportBtn = document.createElement('button');
-        exportBtn.id = 'export-btn';
-        exportBtn.className = 'btn btn-secondary';
-        exportBtn.innerHTML = '<i class="fas fa-file-pdf"></i> 导出PDF';
-        exportBtn.addEventListener('click', exportToPDF);
-        
-        const controls = document.querySelector('.controls');
-        if (controls) {
-            controls.appendChild(exportBtn);
-        }
     }
     
     // 添加CSS变量更新
@@ -728,9 +680,4 @@ document.addEventListener('DOMContentLoaded', function() {
     init();
     addPrintStyles();
     updateCSSVariables();
-    // 如果需要导出功能，取消下面注释
-    // addExportButton();
-    
-    // 监听设置变化更新CSS变量
-    applySettingsBtn.addEventListener('click', updateCSSVariables);
 });
