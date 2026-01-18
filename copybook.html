@@ -390,10 +390,12 @@
         
         /* 字帖网格区域 */
         .copybook-content {
-            padding: 20px;
-            background-color: #fff;
-            border-radius: 8px;
-        }
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    width: 100%;
+    box-sizing: border-box;
+}
         
         .copybook-title {
             text-align: center;
@@ -425,10 +427,11 @@
             break-inside: avoid;
         }
         
-        .copybook-grid-container {
-            display: grid;
-            gap: 20px;
-        }
+       .copybook-grid-container {
+    display: grid;
+    gap: 0; /* 去除列间距 */
+    margin-bottom: 25px; /* 保留行间距 */
+}
         
         .copybook-row {
             display: grid;
@@ -437,15 +440,15 @@
         }
         
         /* 字帖单元格 */
-        .character-cell {
-            position: relative;
-            border: 1px solid #e0e0e0;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: white;
-        }
+   .character-cell {
+    position: relative;
+    border: 1px solid #e0e0e0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: white;
+    box-sizing: border-box;
+}
         
         /* 网格样式 */
         .grid-background {
@@ -541,48 +544,86 @@
         }
         
         /* 打印样式 */
-        @media print {
-            body * {
-                visibility: hidden;
-            }
-            
-            .copybook-preview,
-            .copybook-preview * {
-                visibility: visible;
-            }
-            
-            .copybook-preview {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-                padding: 0;
-                box-shadow: none;
-            }
-            
-            .preview-header,
-            .settings-panel,
-            .copybook-options,
-            .copybook-header,
-            .footer,
-            .navigation-buttons {
-                display: none !important;
-            }
-            
-            .copybook-content {
-                padding: 10mm;
-            }
-            
-            .character-cell {
-                border: 1px solid #ccc;
-                break-inside: avoid;
-                page-break-inside: avoid;
-            }
-            
-            .grid-background {
-                opacity: 0.7;
-            }
-        }
+  /* 打印样式 */
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    
+    .copybook-preview,
+    .copybook-preview * {
+        visibility: visible;
+    }
+    
+    .copybook-preview {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        padding: 0;
+        box-shadow: none;
+    }
+    
+    /* 隐藏不需要打印的元素 */
+    .preview-header,
+    .settings-panel,
+    .copybook-options,
+    .copybook-header,
+    .footer,
+    .navigation-buttons {
+        display: none !important;
+    }
+    
+    /* 字帖内容样式调整 */
+    .copybook-content {
+        padding: 10mm;
+        width: 100%;
+    }
+    
+    /* 字帖单元格打印样式 */
+    .character-cell {
+        border: 1px solid #ccc !important;
+        break-inside: avoid;
+        page-break-inside: avoid;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    
+    /* 确保网格背景打印出来 */
+    .grid-background {
+        opacity: 1 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    
+    /* 网格容器打印样式 - 去除列间距 */
+    .copybook-grid-container {
+        gap: 0 !important;
+        margin-bottom: 15px !important;
+    }
+    
+    /* 生字打印样式 */
+    .copybook-char {
+        font-size: 40px !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    
+    /* 分页控制 */
+    .copybook-page {
+        page-break-after: always;
+    }
+    
+    .copybook-page:last-child {
+        page-break-after: auto;
+    }
+    
+    /* 纸张设置 */
+    @page {
+        size: A4;
+        margin: 15mm;
+    }
+}
         
         .footer {
             text-align: center;
@@ -715,140 +756,107 @@
             </div>
             
             <!-- 右侧设置面板 -->
-            <div class="settings-panel">
-                <h2 class="settings-title"><i class="fas fa-cog"></i> 字帖设置</h2>
-                
-                <!-- 方格设置 -->
-                <div class="settings-group">
-                    <h3>方格设置</h3>
-                    
-                    <div class="setting-item">
-                        <label>网格类型</label>
-                        <div class="grid-type-select">
-                            <button class="grid-type-btn active" data-type="tianzi">田字格</button>
-                            <button class="grid-type-btn" data-type="mizi">米字格</button>
-                        </div>
-                    </div>
-                    
-                    <div class="setting-item">
-                        <label>方格大小: <span id="grid-size-value">80</span>px</label>
-                        <input type="range" id="grid-size-slider" class="range-slider" min="60" max="120" step="5" value="80">
-                        <div class="range-value">
-                            <span>小</span>
-                            <span>中</span>
-                            <span>大</span>
-                        </div>
-                    </div>
-                    
-                    <div class="setting-item">
-                        <label>每行字数: <span id="chars-per-row-value">5</span></label>
-                        <input type="range" id="chars-per-row-slider" class="range-slider" min="3" max="8" step="1" value="5">
-                        <div class="range-value">
-                            <span>少</span>
-                            <span>适中</span>
-                            <span>多</span>
-                        </div>
-                    </div>
-                    
-                    <div class="setting-item">
-                        <label>行间距: <span id="row-spacing-value">25</span>px</label>
-                        <input type="range" id="row-spacing-slider" class="range-slider" min="15" max="40" step="5" value="25">
-                        <div class="range-value">
-                            <span>紧凑</span>
-                            <span>适中</span>
-                            <span>宽松</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- 字体设置 -->
-                <div class="settings-group">
-                    <h3>字体设置</h3>
-                    
-                    <div class="setting-item">
-                        <label>字体类型</label>
-                        <select id="font-family-select" class="font-select">
-                            <option value="'Ma Shan Zheng', cursive">马善政体</option>
-                            <option value="'KaiTi', '楷体', serif">楷体</option>
-                            <option value="'SimSun', '宋体', serif">宋体</option>
-                            <option value="'STKaiti', serif">华文楷体</option>
-                            <option value="'FangSong', serif">仿宋</option>
-                        </select>
-                    </div>
-                    
-                    <div class="setting-item">
-                        <label>字体大小: <span id="font-size-value">48</span>px</label>
-                        <input type="range" id="font-size-slider" class="range-slider" min="32" max="64" step="4" value="48">
-                        <div class="range-value">
-                            <span>小</span>
-                            <span>中</span>
-                            <span>大</span>
-                        </div>
-                    </div>
-                    
-                    <div class="setting-item">
-                        <label>字体粗细</label>
-                        <select id="font-weight-select" class="font-select">
-                            <option value="400">正常</option>
-                            <option value="500">中等</option>
-                            <option value="600">半粗</option>
-                            <option value="700">加粗</option>
-                            <option value="800">特粗</option>
-                        </select>
-                    </div>
-                    
-                    <div class="setting-item">
-                        <label>拼音大小: <span id="pinyin-size-value">12</span>px</label>
-                        <input type="range" id="pinyin-size-slider" class="range-slider" min="8" max="16" step="2" value="12">
-                        <div class="range-value">
-                            <span>小</span>
-                            <span>中</span>
-                            <span>大</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- 页面设置 -->
-                <div class="settings-group">
-                    <h3>页面设置</h3>
-                    
-                    <div class="setting-item">
-                        <label>每页行数</label>
-                        <select id="page-rows-select" class="font-select">
-                            <option value="10">10行</option>
-                            <option value="12" selected>12行</option>
-                            <option value="15">15行</option>
-                            <option value="18">18行</option>
-                            <option value="20">20行</option>
-                        </select>
-                    </div>
-                    
-                    <div class="setting-item">
-                        <label>纸张方向</label>
-                        <div class="grid-type-select">
-                            <button class="grid-type-btn active" data-orientation="portrait">纵向</button>
-                            <button class="grid-type-btn" data-orientation="landscape">横向</button>
-                        </div>
-                    </div>
-                    
-                    <div class="setting-item">
-                        <label>显示拼音</label>
-                        <div class="grid-type-select">
-                            <button class="grid-type-btn active" data-show-pinyin="true">显示</button>
-                            <button class="grid-type-btn" data-show-pinyin="false">隐藏</button>
-                        </div>
-                    </div>
-                    
-                    <div class="setting-item">
-                        <label>显示笔画数</label>
-                        <div class="grid-type-select">
-                            <button class="grid-type-btn active" data-show-strokes="true">显示</button>
-                            <button class="grid-type-btn" data-show-strokes="false">隐藏</button>
-                        </div>
-                    </div>
-                </div>
+            <!-- 右侧设置面板 -->
+<div class="settings-panel">
+    <h2 class="settings-title"><i class="fas fa-cog"></i> 字帖设置</h2>
+    
+    <!-- 方格设置 -->
+    <div class="settings-group">
+        <h3>方格设置</h3>
+        
+        <div class="setting-item">
+            <label>网格类型</label>
+            <div class="grid-type-select">
+                <button class="grid-type-btn active" data-type="tianzi">田字格</button>
+                <button class="grid-type-btn" data-type="mizi">米字格</button>
             </div>
         </div>
+        
+        <div class="setting-item">
+            <label>方格大小: <span id="grid-size-value">80</span>px</label>
+            <input type="range" id="grid-size-slider" class="range-slider" min="60" max="120" step="5" value="80">
+            <div class="range-value">
+                <span>小</span>
+                <span>中</span>
+                <span>大</span>
+            </div>
+        </div>
+        
+        <div class="setting-item">
+            <label>每行字数: <span id="chars-per-row-value">5</span></label>
+            <input type="range" id="chars-per-row-slider" class="range-slider" min="3" max="8" step="1" value="5">
+            <div class="range-value">
+                <span>少</span>
+                <span>适中</span>
+                <span>多</span>
+            </div>
+        </div>
+        
+        <div class="setting-item">
+            <label>行间距: <span id="row-spacing-value">25</span>px</label>
+            <input type="range" id="row-spacing-slider" class="range-slider" min="15" max="40" step="5" value="25">
+            <div class="range-value">
+                <span>紧凑</span>
+                <span>适中</span>
+                <span>宽松</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 字体设置 -->
+    <div class="settings-group">
+        <h3>字体设置</h3>
+        
+        <div class="setting-item">
+            <label>字体类型</label>
+            <select id="font-family-select" class="font-select">
+                <option value="'Ma Shan Zheng', cursive">马善政体</option>
+                <option value="'KaiTi', '楷体', serif">楷体</option>
+                <option value="'SimSun', '宋体', serif">宋体</option>
+                <option value="'STKaiti', serif">华文楷体</option>
+                <option value="'FangSong', serif">仿宋</option>
+            </select>
+        </div>
+        
+        <div class="setting-item">
+            <label>字体大小: <span id="font-size-value">48</span>px</label>
+            <input type="range" id="font-size-slider" class="range-slider" min="32" max="64" step="4" value="48">
+            <div class="range-value">
+                <span>小</span>
+                <span>中</span>
+                <span>大</span>
+            </div>
+        </div>
+        
+        <div class="setting-item">
+            <label>字体粗细</label>
+            <select id="font-weight-select" class="font-select">
+                <option value="400">正常</option>
+                <option value="500">中等</option>
+                <option value="600">半粗</option>
+                <option value="700">加粗</option>
+                <option value="800">特粗</option>
+            </select>
+        </div>
+    </div>
+                
+                <!-- 页面设置 -->
+                  <!-- 页面设置 -->
+    <div class="settings-group">
+        <h3>页面设置</h3>
+        
+        <div class="setting-item">
+            <label>每页行数</label>
+            <select id="page-rows-select" class="font-select">
+                <option value="10">10行</option>
+                <option value="12" selected>12行</option>
+                <option value="15">15行</option>
+                <option value="18">18行</option>
+                <option value="20">20行</option>
+            </select>
+        </div>
+    </div>
+</div>
         
         <!-- 导航按钮 -->
         <div class="navigation-buttons">
