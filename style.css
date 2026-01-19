@@ -1222,3 +1222,51 @@ button, .character-card-item, .character-item {
         height: 50px;
     }
 }
+
+/* 字帖页面响应式调整 */
+@media (max-width: 1024px) {
+    .copybook-container {
+        flex-direction: column;
+    }
+    
+    .settings-panel {
+        width: 100%;
+        position: static;
+        height: auto;
+        max-height: 400px;
+    }
+}
+
+@media (max-width: 768px) {
+    .grid-type-selector {
+        grid-template-columns: 1fr;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+    
+    .grid-cell .character {
+        font-size: 24px;
+    }
+}
+
+@media (max-width: 480px) {
+    .character {
+        font-size: 20px;
+    }
+    
+    .grid-cell {
+        min-width: 60px;
+    }
+}
+
+/* 确保空单元格有正确的背景色 */
+.grid-cell.empty-cell {
+    background-color: #f9f9f9;
+}
+
+/* 非空单元格保持白色背景 */
+.grid-cell:not(.empty-cell) {
+    background-color: white;
+}
