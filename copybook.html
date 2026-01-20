@@ -1213,7 +1213,7 @@
             .substring(0, 50) || '字帖';    // 限制长度
     }
    
-    // 下载为Word文档 - 使用表格边框创建田字格/米字格效果
+    // 下载为Word文档 - 使用简单表格边框创建田字格效果
     async function downloadAsWord() {
         if (currentCharacters.length === 0) {
             showError('请先生成字帖');
@@ -1233,196 +1233,95 @@
             const date = new Date().toLocaleDateString('zh-CN');
             const fileName = getValidFileName(title) + '.doc';
             
-            // 创建Word文档的HTML内容
+            // 创建Word文档的HTML内容 - 使用最简单的HTML表格
             let wordHTML = `
                 <!DOCTYPE html>
-                <html xmlns:o="urn:schemas-microsoft-com:office:office" 
-                      xmlns:w="urn:schemas-microsoft-com:office:word" 
-                      xmlns="http://www.w3.org/TR/REC-html40">
+                <html>
                 <head>
                     <meta charset="UTF-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
                     <title>${title}</title>
                     <style>
                         body {
                             font-family: 'Microsoft YaHei', 'SimSun', sans-serif;
                             margin: 0;
                             padding: 0;
-                            background-color: #ffffff;
                         }
-                        
                         .page {
-                            width: 794px; /* A4宽度 */
-                            min-height: 1123px; /* A4高度 */
+                            width: 21cm; /* A4宽度 */
+                            min-height: 29.7cm; /* A4高度 */
                             margin: 0 auto;
-                            padding: 40px 50px;
-                            box-sizing: border-box;
+                            padding: 2cm;
                             page-break-after: always;
                         }
-                        
-                        .page-header {
+                        .header {
                             text-align: center;
-                            margin-bottom: 30px;
-                            padding-bottom: 15px;
+                            margin-bottom: 1.5cm;
+                            padding-bottom: 0.5cm;
                             border-bottom: 2px solid #4a6fa5;
                         }
-                        
-                        .page-title {
+                        .title {
                             color: #4a6fa5;
-                            font-size: 28px;
-                            margin: 0 0 10px 0;
+                            font-size: 24pt;
+                            margin: 0 0 0.2cm 0;
                             font-weight: bold;
                         }
-                        
-                        .page-subtitle {
+                        .subtitle {
                             color: #666666;
-                            font-size: 16px;
-                            margin: 5px 0;
+                            font-size: 12pt;
+                            margin: 0.1cm 0;
                         }
-                        
-                        .page-info {
+                        .info {
                             color: #999999;
-                            font-size: 14px;
-                            margin: 5px 0;
+                            font-size: 10pt;
+                            margin: 0.1cm 0;
                         }
-                        
-                        /* 网格表格样式 */
                         .grid-table {
                             width: 100%;
                             border-collapse: collapse;
-                            margin-top: 20px;
-                            table-layout: fixed;
+                            margin-top: 1cm;
                         }
-                        
-                        .grid-table td {
+                        .grid-cell {
                             width: ${100 / colsPerRow}%;
-                            height: 70px;
+                            height: 2cm;
+                            border: 1px solid #999999;
                             text-align: center;
                             vertical-align: middle;
                             position: relative;
-                            padding: 0;
-                            margin: 0;
                         }
-                        
-                        /* 单元格边框样式 */
-                        .cell-border {
-                            width: 100%;
-                            height: 100%;
-                            position: absolute;
-                            top: 0;
-                            left: 0;
-                            border: 1px solid #999999;
+                        /* 田字格效果 - 使用内部边框 */
+                        .tianzi-cell {
+                            border-right: 1px solid #dddddd !important;
+                            border-bottom: 1px solid #dddddd !important;
                         }
-                        
-                        /* 田字格样式 - 使用额外的边框创建十字线 */
-                        .tianzi-grid {
-                            position: absolute;
-                            top: 0;
-                            left: 0;
-                            width: 100%;
-                            height: 100%;
+                        /* 米字格效果 - 使用背景图片 */
+                        .mizi-cell {
+                            background: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0id2hpdGUiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLXdpZHRoPSIwLjUiLz48bGluZSB4MT0iNTAiIHkxPSIwIiB4Mj0iNTAiIHkyPSIxMDAiIHN0cm9rZT0iIzk5OSIgc3Ryb2tlLXdpZHRoPSIwLjUiLz48bGluZSB4MT0iMCIgeTE9IjUwIiB4Mj0iMTAwIiB5Mj0iNTAiIHN0cm9rZT0iIzk5OSIgc3Ryb2tlLXdpZHRoPSIwLjUiLz48bGluZSB4MT0iMCIgeTE9IjAiIHgyPSIxMDAiIHkyPSIxMDAiIHN0cm9rZT0iI2VlZSIgc3Ryb2tlLXdpZHRoPSIwLjUiLz48bGluZSB4MT0iMTAwIiB5MT0iMCIgeDI9IjAiIHkyPSIxMDAiIHN0cm9rZT0iI2VlZSIgc3Ryb2tlLXdpZHRoPSIwLjUiLz48L3N2Zz4=');
+                            background-size: 100% 100%;
                         }
-                        
-                        .tianzi-grid::before {
-                            content: '';
-                            position: absolute;
-                            left: 50%;
-                            top: 0;
-                            width: 1px;
-                            height: 100%;
-                            background-color: #dddddd;
-                        }
-                        
-                        .tianzi-grid::after {
-                            content: '';
-                            position: absolute;
-                            left: 0;
-                            top: 50%;
-                            width: 100%;
-                            height: 1px;
-                            background-color: #dddddd;
-                        }
-                        
-                        /* 米字格样式 - 添加对角线 */
-                        .mizi-grid {
-                            position: absolute;
-                            top: 0;
-                            left: 0;
-                            width: 100%;
-                            height: 100%;
-                        }
-                        
-                        .mizi-grid::before {
-                            content: '';
-                            position: absolute;
-                            left: 50%;
-                            top: 0;
-                            width: 1px;
-                            height: 100%;
-                            background-color: #dddddd;
-                        }
-                        
-                        .mizi-grid::after {
-                            content: '';
-                            position: absolute;
-                            left: 0;
-                            top: 50%;
-                            width: 100%;
-                            height: 1px;
-                            background-color: #dddddd;
-                        }
-                        
-                        .mizi-grid .diagonal1 {
-                            position: absolute;
-                            left: 50%;
-                            top: 0;
-                            width: 1px;
-                            height: 140%;
-                            background-color: #eeeeee;
-                            transform: translateX(-50%) rotate(45deg);
-                            transform-origin: center;
-                        }
-                        
-                        .mizi-grid .diagonal2 {
-                            position: absolute;
-                            left: 50%;
-                            top: 0;
-                            width: 1px;
-                            height: 140%;
-                            background-color: #eeeeee;
-                            transform: translateX(-50%) rotate(-45deg);
-                            transform-origin: center;
-                        }
-                        
                         .character {
+                            font-family: '${getFontFamilyName(currentSettings.fontFamily)}';
+                            font-size: ${currentSettings.fontSize * 2}pt;
+                            font-weight: ${currentSettings.fontWeight};
+                            color: ${currentSettings.fontColor};
                             position: absolute;
                             top: 50%;
                             left: 50%;
                             transform: translate(-50%, -50%);
-                            font-family: '${getFontFamilyName(currentSettings.fontFamily)}';
-                            font-size: ${currentSettings.fontSize * 0.7}px;
-                            font-weight: ${currentSettings.fontWeight};
-                            color: ${currentSettings.fontColor};
-                            z-index: 10;
-                            text-align: center;
                         }
-                        
-                        .page-footer {
-                            text-align: center;
-                            margin-top: 30px;
-                            padding-top: 15px;
-                            border-top: 1px solid #eeeeee;
-                            color: #888888;
-                            font-size: 12px;
-                        }
-                        
-                        .empty-cell-bg {
+                        .empty-cell {
                             background-color: #f9f9f9;
                         }
-                        
+                        .footer {
+                            text-align: center;
+                            margin-top: 1cm;
+                            padding-top: 0.5cm;
+                            border-top: 1px solid #eeeeee;
+                            color: #888888;
+                            font-size: 9pt;
+                        }
                         @page {
                             size: A4 portrait;
-                            margin: 0;
+                            margin: 2cm;
                         }
                     </style>
                 </head>
@@ -1435,10 +1334,10 @@
                 
                 // 页眉
                 wordHTML += `
-                    <div class="page-header">
-                        <h1 class="page-title">${title}</h1>
-                        <p class="page-subtitle">规范书写练习 - 共 ${currentCharacters.length} 个生字</p>
-                        <p class="page-info">第 ${page} 页 / 共 ${totalPages} 页 - 生成日期: ${date}</p>
+                    <div class="header">
+                        <h1 class="title">${title}</h1>
+                        <p class="subtitle">规范书写练习 - 共 ${currentCharacters.length} 个生字</p>
+                        <p class="info">第 ${page} 页 / 共 ${totalPages} 页 - 生成日期: ${date}</p>
                     </div>
                 `;
                 
@@ -1448,7 +1347,7 @@
                 const pageCharacters = currentCharacters.slice(startIndex, endIndex);
                 
                 // 创建表格
-                wordHTML += `<table class="grid-table" cellspacing="0" cellpadding="0" border="0">`;
+                wordHTML += `<table class="grid-table" cellspacing="0" cellpadding="0">`;
                 
                 // 生成每一行
                 for (let row = 0; row < rowsPerPage; row++) {
@@ -1459,28 +1358,15 @@
                     
                     // 生成每行的格子
                     for (let col = 0; col < colsPerRow; col++) {
-                        // 设置单元格背景
-                        const bgClass = (col === 0 && hasCharacter) ? '' : 'empty-cell-bg';
+                        // 判断是否为田字格或米字格
+                        const gridClass = (col === 0 && hasCharacter) ? 
+                            (currentSettings.gridType === 'tian' ? 'tianzi-cell' : 'mizi-cell') : '';
+                        const bgClass = (col === 0 && hasCharacter) ? '' : 'empty-cell';
                         
-                        wordHTML += `<td style="position: relative; width: ${100 / colsPerRow}%; height: 70px;" class="${bgClass}">`;
+                        wordHTML += `<td class="grid-cell ${gridClass} ${bgClass}" style="width: ${100 / colsPerRow}%; height: 2cm;">`;
                         
-                        // 添加外边框
-                        wordHTML += `<div class="cell-border"></div>`;
-                        
-                        // 添加田字格或米字格
+                        // 如果是第一个格子且有生字，显示生字
                         if (col === 0 && hasCharacter) {
-                            if (currentSettings.gridType === 'tian') {
-                                wordHTML += `<div class="tianzi-grid"></div>`;
-                            } else if (currentSettings.gridType === 'mi') {
-                                wordHTML += `
-                                    <div class="mizi-grid">
-                                        <div class="diagonal1"></div>
-                                        <div class="diagonal2"></div>
-                                    </div>
-                                `;
-                            }
-                            
-                            // 添加生字
                             wordHTML += `<div class="character">${currentCharacter}</div>`;
                         }
                         
@@ -1494,7 +1380,7 @@
                 
                 // 页脚
                 wordHTML += `
-                    <div class="page-footer">
+                    <div class="footer">
                         <p>小学语文生字字帖生成系统 | ${currentSettings.gridType === 'tian' ? '田字格' : '米字格'}练习本</p>
                         <p>温馨提示：请使用楷体或毛笔字体进行描红练习，每个生字建议练习5-10遍</p>
                     </div>
@@ -1523,9 +1409,9 @@
             console.error('Word导出失败:', error);
             showError('Word导出失败: ' + error.message);
             
-            // 尝试备用方案
+            // 尝试备用方案 - 使用更简单的方法
             try {
-                await downloadAsWordBackup();
+                await downloadAsWordSimple();
             } catch (backupError) {
                 console.error('备用方案也失败:', backupError);
                 showError('Word文档生成失败，请尝试其他浏览器或联系管理员');
@@ -1538,7 +1424,7 @@
     // 获取Word兼容的字体名称
     function getFontFamilyName(fontFamily) {
         const fontMap = {
-            'Ma Shan Zheng, cursive': '楷体', // Word中可能没有毛笔字体，使用楷体代替
+            'Ma Shan Zheng, cursive': '楷体',
             'KaiTi, serif': '楷体',
             'SimSun, serif': '宋体',
             'Microsoft YaHei, sans-serif': '微软雅黑'
@@ -1546,18 +1432,18 @@
         return fontMap[fontFamily] || '楷体';
     }
     
-    // 备用Word导出方案 - 使用简单的边框创建田字格效果
-    async function downloadAsWordBackup() {
+    // 备用Word导出方案 - 使用最简单的HTML表格
+    async function downloadAsWordSimple() {
         const title = previewTitle.textContent || '小学语文生字字帖';
         const date = new Date().toLocaleDateString('zh-CN');
         const fileName = getValidFileName(title) + '_简版.doc';
         
         // 计算每页显示的字符
         const rowsPerPage = currentSettings.rowsPerPage;
-        const colsPerRow = currentSettings.colsPerRow || 8;
+        const colsPerRow = 8;
         const totalPages = Math.ceil(currentCharacters.length / rowsPerPage);
         
-        // 创建Word文档内容
+        // 创建最简单的Word内容
         let wordHTML = `
             <!DOCTYPE html>
             <html>
@@ -1565,139 +1451,69 @@
                 <meta charset="UTF-8">
                 <title>${title}</title>
                 <style>
-                    body {
-                        font-family: 'Microsoft YaHei', 'SimSun', sans-serif;
-                        margin: 0;
-                        padding: 0;
-                    }
-                    .page {
-                        width: 794px;
-                        min-height: 1123px;
-                        margin: 0 auto;
-                        padding: 40px 50px;
-                        box-sizing: border-box;
-                        page-break-after: always;
-                    }
-                    .page-header {
-                        text-align: center;
-                        margin-bottom: 30px;
-                        padding-bottom: 15px;
-                        border-bottom: 2px solid #4a6fa5;
-                    }
-                    .page-title {
-                        color: #4a6fa5;
-                        font-size: 28px;
-                        margin: 0 0 10px 0;
-                        font-weight: bold;
-                    }
-                    .grid-container {
-                        display: flex;
-                        flex-direction: column;
-                        margin-top: 20px;
-                    }
-                    .grid-row {
-                        display: flex;
-                        width: 100%;
-                        height: 70px;
-                    }
-                    .grid-cell {
-                        flex: 1;
-                        border: 1px solid #999;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        position: relative;
-                    }
-                    .tianzi-inner {
-                        position: absolute;
-                        width: 100%;
-                        height: 100%;
-                        border-right: 1px solid #ddd;
-                        border-bottom: 1px solid #ddd;
-                    }
-                    .character {
-                        font-family: '${getFontFamilyName(currentSettings.fontFamily)}';
-                        font-size: ${currentSettings.fontSize * 0.7}px;
-                        font-weight: ${currentSettings.fontWeight};
-                        color: ${currentSettings.fontColor};
-                        z-index: 10;
-                    }
-                    .page-footer {
-                        text-align: center;
-                        margin-top: 30px;
-                        padding-top: 15px;
-                        border-top: 1px solid #eee;
-                        color: #888;
-                        font-size: 12px;
-                    }
-                    @page {
-                        size: A4 portrait;
-                        margin: 0;
-                    }
+                    body { font-family: 'Microsoft YaHei', 'SimSun', sans-serif; margin: 2cm; }
+                    h1 { color: #4a6fa5; text-align: center; }
+                    table { width: 100%; border-collapse: collapse; margin-top: 1cm; }
+                    td { border: 1px solid black; width: 12.5%; height: 2cm; text-align: center; vertical-align: middle; }
+                    .character { font-size: 24pt; }
+                    .grid-info { text-align: center; margin-top: 0.5cm; color: #666; font-size: 10pt; }
+                    .footer { text-align: center; margin-top: 1cm; color: #888; font-size: 9pt; }
                 </style>
             </head>
             <body>
+                <h1>${title}</h1>
+                <p style="text-align: center;">共 ${currentCharacters.length} 个生字 - 生成日期: ${date}</p>
+                <div class="grid-info">${currentSettings.gridType === 'tian' ? '田字格' : '米字格'}练习本 - 请在方格内练习书写</div>
         `;
         
         // 生成每一页
         for (let page = 1; page <= totalPages; page++) {
-            wordHTML += `<div class="page">`;
-            
-            // 页眉
-            wordHTML += `
-                <div class="page-header">
-                    <h1 class="page-title">${title}</h1>
-                    <p>第 ${page} 页 / 共 ${totalPages} 页 - 生成日期: ${date}</p>
-                </div>
-            `;
+            wordHTML += `<h2 style="text-align: center;">第 ${page} 页 / 共 ${totalPages} 页</h2>`;
+            wordHTML += `<table cellspacing="0" cellpadding="5">`;
             
             // 计算当前页的生字
             const startIndex = (page - 1) * rowsPerPage;
             const endIndex = Math.min(startIndex + rowsPerPage, currentCharacters.length);
             const pageCharacters = currentCharacters.slice(startIndex, endIndex);
             
-            // 创建网格容器
-            wordHTML += `<div class="grid-container">`;
-            
             // 生成每一行
             for (let row = 0; row < rowsPerPage; row++) {
-                wordHTML += `<div class="grid-row">`;
+                wordHTML += `<tr>`;
                 
                 const hasCharacter = row < pageCharacters.length;
                 const currentCharacter = hasCharacter ? pageCharacters[row] : '';
                 
                 // 生成每行的格子
                 for (let col = 0; col < colsPerRow; col++) {
-                    wordHTML += `<div class="grid-cell">`;
+                    wordHTML += `<td>`;
                     
-                    // 如果是第一个格子且有生字，显示田字格和生字
+                    // 如果是第一个格子且有生字，显示生字
                     if (col === 0 && hasCharacter) {
-                        if (currentSettings.gridType === 'tian') {
-                            wordHTML += `<div class="tianzi-inner"></div>`;
-                        }
                         wordHTML += `<div class="character">${currentCharacter}</div>`;
+                    } else if (col === 0) {
+                        wordHTML += `&nbsp;`;
+                    } else {
+                        wordHTML += `&nbsp;`;
                     }
                     
-                    wordHTML += `</div>`;
+                    wordHTML += `</td>`;
                 }
                 
-                wordHTML += `</div>`;
+                wordHTML += `</tr>`;
             }
             
-            wordHTML += `</div>`;
+            wordHTML += `</table>`;
             
-            // 页脚
-            wordHTML += `
-                <div class="page-footer">
-                    <p>小学语文生字字帖生成系统</p>
-                    <p>${currentSettings.gridType === 'tian' ? '田字格' : '米字格'}练习本</p>
-                </div>
-            `;
-            
-            wordHTML += `</div>`;
+            if (page < totalPages) {
+                wordHTML += `<div style="page-break-after: always;"></div>`;
+            }
         }
         
         wordHTML += `
+                <div class="footer">
+                    <p>小学语文生字字帖生成系统</p>
+                    <p>每个生字建议在${currentSettings.gridType === 'tian' ? '田字格' : '米字格'}内练习5-10遍</p>
+                </div>
             </body>
             </html>
         `;
