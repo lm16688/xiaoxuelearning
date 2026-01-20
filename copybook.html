@@ -1232,6 +1232,7 @@ function getValidFileName(text) {
 }
     // 下载为PDF - 简化版本，确保中文显示
 // 下载为PDF - 修复版本
+// 下载为PDF - 使用中文字体支持
 async function downloadAsPDF() {
     if (currentCharacters.length === 0) {
         showError('请先生成字帖');
@@ -1241,68 +1242,144 @@ async function downloadAsPDF() {
     showLoading();
     
     try {
-        // 使用html2canvas将字帖转换为图片，再生成PDF
-        const copybookContent = document.getElementById('copybook-content');
-        
-        // 隐藏分页控件，只显示当前页
-        const previewControls = document.querySelector('.preview-controls');
-        const previewFooter = document.querySelector('.preview-footer');
-        const originalControlsDisplay = previewControls.style.display;
-        const originalFooterDisplay = previewFooter.style.display;
-        
-        previewControls.style.display = 'none';
-        previewFooter.style.display = 'none';
-        
-        // 显示所有页面以便截图
-        const allPages = document.querySelectorAll('.grid-page');
-        const originalDisplays = [];
-        allPages.forEach(page => {
-            originalDisplays.push(page.style.display);
-            page.style.display = 'block';
-        });
-        
-        // 使用html2canvas生成图片
-        const canvas = await html2canvas(copybookContent, {
-            scale: 2, // 提高分辨率
-            useCORS: true,
-            backgroundColor: '#ffffff',
-            logging: true
-        });
-        
-        // 恢复原始显示状态
-        previewControls.style.display = originalControlsDisplay;
-        previewFooter.style.display = originalFooterDisplay;
-        allPages.forEach((page, index) => {
-            page.style.display = originalDisplays[index] || page.classList.contains('active') ? 'block' : 'none';
-        });
-        
-        // 创建PDF
         const { jsPDF } = window.jspdf;
+        
+        // 创建一个新的PDF文档
         const pdf = new jsPDF({
             orientation: 'portrait',
             unit: 'mm',
             format: 'a4'
         });
         
+        // 页面尺寸
         const pageWidth = pdf.internal.pageSize.getWidth();
         const pageHeight = pdf.internal.pageSize.getHeight();
         
-        // 计算图片尺寸
-        const imgWidth = pageWidth - 40; // 左右各留20mm边距
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        // 边距
+        const margin = 15;
+        const headerHeight = 20;
         
-        // 添加图片到PDF
-        const imgData = canvas.toDataURL('image/jpeg', 0.95);
-        pdf.addImage(imgData, 'JPEG', 20, 20, imgWidth, imgHeight);
+        // 网格参数 - 每行8格，每页10行
+        const rowsPerPage = 10;
+        const colsPerPage = 8;
+        const cellSize = 20; // 20mm x 20mm
         
-        // 添加标题和页脚
-        pdf.setFontSize(16);
-        pdf.setTextColor(74, 111, 165);
-        pdf.text(previewTitle.textContent, pageWidth / 2, 15, { align: 'center' });
+        // 网格起始位置
+        const gridWidth = cellSize * colsPerPage;
+        const gridHeight = cellSize * rowsPerPage;
+        const startX = (pageWidth - gridWidth) / 2;
+        const startY = margin + headerHeight;
         
-        pdf.setFontSize(10);
-        pdf.setTextColor(100, 100, 100);
-        pdf.text(characterCount.textContent, pageWidth / 2, pageHeight - 10, { align: 'center' });
+        // 总页数
+        const totalPagesPDF = Math.ceil(currentCharacters.length / rowsPerPage);
+        
+        console.log(`开始生成PDF，总页数: ${totalPagesPDF}`);
+        
+        // 设置默认字体为支持中文的字体
+        pdf.setFont('helvetica');
+        
+        for (let pageNum = 1; pageNum <= totalPagesPDF; pageNum++) {
+            if (pageNum > 1) {
+                pdf.addPage();
+            }
+            
+            // 添加页面标题 - 使用文本数组方式处理中文
+            pdf.setFontSize(16);
+            pdf.setTextColor(74, 111, 165);
+            
+            const title = pageNum === 1 ? 
+                previewTitle.textContent : 
+                previewTitle.textContent + ` (第${pageNum}页)`;
+            
+            // 使用splitTextToSize处理长文本
+            const titleLines = pdf.splitTextToSize(title, pageWidth - 2 * margin);
+            pdf.text(titleLines, pageWidth / 2, margin, { align: 'center' });
+            
+            // 当前页的生字
+            const startIndex = (pageNum - 1) * rowsPerPage;
+            const endIndex = Math.min(startIndex + rowsPerPage, currentCharacters.length);
+            const pageCharacters = currentCharacters.slice(startIndex, endIndex);
+            
+            console.log(`第${pageNum}页: ${pageCharacters.length}个生字`);
+            
+            // 绘制网格
+            pdf.setDrawColor(180, 180, 180);
+            pdf.setLineWidth(0.3);
+            
+            for (let row = 0; row < rowsPerPage; row++) {
+                for (let col = 0; col < colsPerPage; col++) {
+                    const x = startX + col * cellSize;
+                    const y = startY + row * cellSize;
+                    
+                    // 绘制单元格边框
+                    pdf.rect(x, y, cellSize, cellSize);
+                    
+                    // 绘制辅助线
+                    pdf.setDrawColor(220, 220, 220);
+                    pdf.setLineWidth(0.1);
+                    
+                    // 垂直线
+                    pdf.line(x + cellSize / 2, y, x + cellSize / 2, y + cellSize);
+                    
+                    // 水平线
+                    pdf.line(x, y + cellSize / 2, x + cellSize, y + cellSize / 2);
+                    
+                    // 如果是米字格，绘制对角线
+                    if (currentSettings.gridType === 'mi') {
+                        pdf.line(x, y, x + cellSize, y + cellSize);
+                        pdf.line(x + cellSize, y, x, y + cellSize);
+                    }
+                    
+                    pdf.setDrawColor(180, 180, 180);
+                    pdf.setLineWidth(0.3);
+                    
+                    // 在第一列添加生字
+                    if (col === 0 && row < pageCharacters.length) {
+                        const character = pageCharacters[row];
+                        
+                        // 设置字体大小
+                        const fontSize = Math.min(currentSettings.fontSize / 3, 12);
+                        pdf.setFontSize(fontSize);
+                        
+                        // 设置字体颜色
+                        const color = hexToRgb(currentSettings.fontColor);
+                        pdf.setTextColor(color.r, color.g, color.b);
+                        
+                        // 添加生字
+                        const textX = x + cellSize / 2;
+                        const textY = y + cellSize / 2;
+                        
+                        // 直接输出字符，jsPDF会自动处理
+                        pdf.text(character, textX, textY, {
+                            align: 'center',
+                            baseline: 'middle'
+                        });
+                    }
+                }
+            }
+            
+            // 添加页码
+            pdf.setFontSize(10);
+            pdf.setTextColor(100, 100, 100);
+            pdf.text(`第 ${pageNum} 页 / 共 ${totalPagesPDF} 页`, 
+                    pageWidth / 2, pageHeight - margin, 
+                    { align: 'center' });
+            
+            // 添加本页生字列表
+            pdf.setFontSize(10);
+            pdf.setTextColor(74, 111, 165);
+            pdf.text('本页生字:', startX - 25, startY);
+            
+            pdf.setFontSize(11);
+            pdf.setTextColor(50, 50, 50);
+            
+            // 显示本页所有生字
+            for (let i = 0; i < pageCharacters.length; i++) {
+                const char = pageCharacters[i];
+                const yPos = startY + 5 + (i * 5);
+                pdf.text(`${i+1}. ${char}`, startX - 25, yPos);
+            }
+        }
         
         // 保存PDF
         const fileName = getValidFileName(previewTitle.textContent) + '.pdf';
@@ -1317,6 +1394,8 @@ async function downloadAsPDF() {
         hideLoading();
     }
 }
+
+
 
 
     // 辅助函数：将十六进制颜色转换为RGB
@@ -1493,6 +1572,13 @@ async function downloadAsPDF() {
     // 页面加载完成后初始化
     document.addEventListener('DOMContentLoaded', init);
 </script>
+
+<!-- 在现有的script引用后面添加 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
+<!-- 添加中文字体支持 -->
+<script src="https://unpkg.com/jspdf-customfonts@latest/dist/default_vfs.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@latest/dist/jspdf.umd.min.js"></script>
         
 </body>
 </html>
