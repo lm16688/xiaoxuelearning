@@ -1625,8 +1625,7 @@ function createPDFContainerForDownload(characters, title) {
         for (let row = 0; row < rowsPerPage; row++) {
             if (row < pageCharacters.length) {
                 const character = pageCharacters[row];
-                const strokeOrder = getStrokeOrder(character);
-                const formattedStroke = formatStrokeOrderForStyle(strokeOrder, 'numbers');
+                
                 
                 // 笔顺行
                 htmlContent += `<div class="pdf-stroke-row">`;
@@ -1748,10 +1747,7 @@ async function downloadPDFUniversalFallback() {
             pdf.setFontSize(36);
             pdf.text(char, xPos + 10, currentY);
             
-            // 添加笔顺
-            pdf.setFontSize(10);
-            const strokeOrder = getStrokeOrder(char);
-            pdf.text(strokeOrder, xPos + 5, currentY - 5);
+           
             
             // 添加方格
             pdf.setDrawColor(200, 200, 200);
