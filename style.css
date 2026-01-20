@@ -1367,3 +1367,51 @@ button, .character-card-item, .character-item {
     height: 25mm !important;
     border: 0.5px solid #999 !important;
 }
+
+/* PDF模式样式 */
+.pdf-mode .copybook-content {
+    width: 794px !important;
+    margin: 0 auto !important;
+    box-shadow: none !important;
+    border: none !important;
+}
+
+.pdf-mode .grid-page {
+    width: 794px !important;
+    min-height: 1123px !important;
+    padding: 40px !important;
+    box-sizing: border-box !important;
+    page-break-after: always !important;
+    margin-bottom: 0 !important;
+}
+
+.pdf-mode .grid-row {
+    display: flex !important;
+    width: 100% !important;
+    justify-content: space-between !important;
+    margin-bottom: 10px !important;
+}
+
+.pdf-mode .grid-cell {
+    width: 90px !important; /* (794 - 80) / 8 = 89.25 */
+    height: 90px !important;
+    flex-shrink: 0 !important;
+    border: 1px solid #999 !important;
+}
+
+/* 分页符 */
+.page-break {
+    page-break-before: always !important;
+    break-before: page !important;
+}
+
+/* 打印样式优化 */
+@media print {
+    .grid-page {
+        page-break-after: always;
+    }
+    
+    .grid-page:last-child {
+        page-break-after: auto;
+    }
+}
