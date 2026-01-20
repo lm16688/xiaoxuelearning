@@ -1242,7 +1242,7 @@ function getValidFileName(text) {
    
 // 下载为PDF - 使用中文字体支持
 // 下载为PDF - 使用html2pdf库（支持中文）
-// 下载为PDF - 修复对齐问题
+// 下载为PDF - 使用html2pdf库（支持中文）
 async function downloadAsPDF() {
     if (currentCharacters.length === 0) {
         showError('请先生成字帖');
@@ -1252,242 +1252,138 @@ async function downloadAsPDF() {
     showLoading();
     
     try {
-        // 因为字帖有多页，我们需要分别处理每页
-        const totalPages = document.querySelectorAll('.grid-page').length;
-        const pdfPromises = [];
+        // 获取字帖内容元素
+        const element = document.getElementById('copybook-content');
         
         // 临时隐藏不需要的元素
-        const elementsToHide = [
-            '.preview-controls',
-            '.preview-footer',
-            '.preview-header',
-            '.navbar',
-            '.header',
-            '#error-message',
-            '#success-message'
-        ];
+        const previewControls = document.querySelector('.preview-controls');
+        const previewFooter = document.querySelector('.preview-footer');
+        const originalControlsDisplay = previewControls.style.display;
+        const originalFooterDisplay = previewFooter.style.display;
         
-        const originalStyles = [];
-        elementsToHide.forEach(selector => {
-            const elements = document.querySelectorAll(selector);
-            elements.forEach(el => {
-                originalStyles.push({
-                    element: el,
-                    display: el.style.display
-                });
-                el.style.display = 'none';
-            });
+        previewControls.style.display = 'none';
+        previewFooter.style.display = 'none';
+        
+        // 显示所有页面
+        const allPages = document.querySelectorAll('.grid-page');
+        const originalDisplays = [];
+        allPages.forEach(page => {
+            originalDisplays.push(page.style.display);
+            page.style.display = 'block';
         });
         
-        // 为每页生成单独的PDF
-        for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
-            // 只显示当前页
-            const allPages = document.querySelectorAll('.grid-page');
-            allPages.forEach((page, index) => {
-                page.style.display = (index + 1) === pageNum ? 'block' : 'none';
-            });
-            
-            // 给copybook-content添加临时样式，确保居中
-            const copybookContent = document.getElementById('copybook-content');
-            const originalContentStyle = copybookContent.style.cssText;
-            
-            // 设置固定宽度确保PDF对齐
-            copybookContent.style.cssText += `
-                margin: 0 auto !important;
-                display: block !important;
-                position: relative !important;
-                left: 0 !important;
-                right: 0 !important;
-                width: 100% !important;
-                max-width: 800px !important;
-            `;
-            
-            // 等待DOM更新
-            await new Promise(resolve => setTimeout(resolve, 100));
-            
-            // 配置html2pdf选项
-            const opt = {
-                margin: [10, 10, 10, 10], // 上下左右边距
-                filename: getValidFileName(previewTitle.textContent) + `_第${pageNum}页.pdf`,
-                image: { type: 'jpeg', quality: 0.95 },
-                html2canvas: { 
-                    scale: 2, // 合适的分辨率
-                    useCORS: true,
-                    backgroundColor: '#ffffff',
-                    logging: false,
-                    letterRendering: true,
-                    windowWidth: 800, // 固定窗口宽度
-                    width: 800 // 固定画布宽度
-                },
-                jsPDF: { 
-                    unit: 'mm',
-                    format: 'a4',
-                    orientation: 'portrait',
-                    compress: true
-                }
-            };
-            
-            // 创建Promise用于处理当前页
-            const pagePromise = new Promise((resolve, reject) => {
-                html2pdf()
-                    .set(opt)
-                    .from(copybookContent)
-                    .toPdf()
-                    .get('pdf')
-                    .then(function(pdf) {
-                        resolve({ pdf, pageNum });
-                    })
-                    .catch(reject);
-            });
-            
-            pdfPromises.push(pagePromise);
-            
-            // 恢复原始样式
-            copybookContent.style.cssText = originalContentStyle;
-        }
-        
-        // 等待所有页面生成
-        const pdfResults = await Promise.all(pdfPromises);
-        
-        // 如果有多页，合并PDF
-        if (totalPages > 1) {
-            // 创建主PDF
-            const { jsPDF } = window.jspdf;
-            const mainPdf = new jsPDF({
+        // 配置html2pdf选项
+        const opt = {
+            margin: [10, 10, 10, 10], // 上右下左边距（毫米）
+            filename: getValidFileName(previewTitle.textContent) + '.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { 
+                scale: 3, // 提高分辨率
+                useCORS: true,
+                backgroundColor: '#ffffff',
+                logging: false,
+                letterRendering: true // 启用字母渲染优化
+            },
+            jsPDF: { 
                 unit: 'mm',
                 format: 'a4',
-                orientation: 'portrait'
-            });
-            
-            // 将每页添加到主PDF
-            for (let i = 0; i < pdfResults.length; i++) {
-                const { pdf, pageNum } = pdfResults[i];
-                
-                if (i > 0) {
-                    mainPdf.addPage();
-                }
-                
-                // 获取当前页的canvas数据
-                const pageElement = document.querySelector(`#page-${pageNum}`);
-                const tempCanvas = await html2canvas(pageElement, {
-                    scale: 2,
-                    backgroundColor: '#ffffff',
-                    width: 800,
-                    height: pageElement.offsetHeight * 2
-                });
-                
-                const imgData = tempCanvas.toDataURL('image/jpeg', 0.95);
-                const pageWidth = mainPdf.internal.pageSize.getWidth();
-                const pageHeight = mainPdf.internal.pageSize.getHeight();
-                
-                // 计算图片尺寸使其居中
-                const imgWidth = pageWidth - 20; // 留出边距
-                const imgHeight = (tempCanvas.height * imgWidth) / tempCanvas.width;
-                
-                // 居中显示
-                const x = (pageWidth - imgWidth) / 2;
-                const y = (pageHeight - imgHeight) / 2;
-                
-                mainPdf.addImage(imgData, 'JPEG', x, y, imgWidth, imgHeight);
+                orientation: 'portrait',
+                compress: true
             }
-            
-            // 保存合并的PDF
-            mainPdf.save(getValidFileName(previewTitle.textContent) + '.pdf');
-        } else {
-            // 只有一页，直接保存
-            const { pdf, pageNum } = pdfResults[0];
-            pdf.save(getValidFileName(previewTitle.textContent) + '.pdf');
-        }
+        };
+        
+        // 使用html2pdf生成PDF
+        await html2pdf().set(opt).from(element).save();
         
         // 恢复原始显示状态
-        originalStyles.forEach(item => {
-            item.element.style.display = item.display;
-        });
-        
-        // 恢复页面显示
-        const allPages = document.querySelectorAll('.grid-page');
+        previewControls.style.display = originalControlsDisplay;
+        previewFooter.style.display = originalFooterDisplay;
         allPages.forEach((page, index) => {
-            page.style.display = index === (currentPage - 1) ? 'block' : 'none';
+            page.style.display = originalDisplays[index] || page.classList.contains('active') ? 'block' : 'none';
         });
         
-        showSuccess(`PDF下载成功！共${totalPages}页`);
+        showSuccess('PDF下载成功！');
         
     } catch (error) {
         console.error('PDF生成失败:', error);
+        showError('PDF生成失败: ' + error.message);
         
-        // 如果复杂方法失败，尝试简单方法
+        // 如果html2pdf失败，尝试备用方案
         try {
-            await downloadPDFSimple();
-        } catch (simpleError) {
-            showError('PDF生成失败，请按Ctrl+P使用浏览器打印功能');
+            await downloadAsPDFBackup();
+        } catch (backupError) {
+            showError('两种PDF生成方式都失败了');
         }
     } finally {
         hideLoading();
     }
 }
 
-// 简单PDF生成方法（备用）
-async function downloadPDFSimple() {
-    // 临时调整样式确保打印效果
-    const copybookContent = document.getElementById('copybook-content');
-    const originalStyle = copybookContent.style.cssText;
-    
-    // 设置打印样式
-    copybookContent.style.cssText = `
-        width: 210mm !important;
-        margin: 0 auto !important;
-        padding: 20px !important;
-        box-shadow: none !important;
-        border: 1px solid #ddd !important;
-    `;
-    
-    // 显示所有页面
-    const allPages = document.querySelectorAll('.grid-page');
-    allPages.forEach(page => {
-        page.style.display = 'block';
+// 备用PDF生成方案（如果html2pdf失败）
+async function downloadAsPDFBackup() {
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
     });
     
-    // 配置html2pdf
-    const opt = {
-        margin: [5, 5, 5, 5],
-        filename: getValidFileName(previewTitle.textContent) + '.pdf',
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { 
-            scale: 3,
-            useCORS: true,
-            backgroundColor: '#ffffff',
-            width: 794, // A4宽度(210mm)的像素值
-            height: copybookContent.offsetHeight * 3
-        },
-        jsPDF: { 
-            unit: 'mm',
-            format: 'a4',
-            orientation: 'portrait'
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const margin = 20;
+    
+    // 添加标题
+    pdf.setFontSize(18);
+    pdf.setTextColor(74, 111, 165);
+    
+    // 使用splitTextToSize处理中文标题
+    const title = previewTitle.textContent;
+    const titleLines = pdf.splitTextToSize(title, pageWidth - 2 * margin);
+    pdf.text(titleLines, pageWidth / 2, margin, { align: 'center' });
+    
+    // 添加生字列表（纯文本方式）
+    pdf.setFontSize(14);
+    pdf.setTextColor(0, 0, 0);
+    
+    let yPos = margin + 20;
+    const charsPerLine = 20;
+    
+    for (let i = 0; i < currentCharacters.length; i++) {
+        if (i > 0 && i % charsPerLine === 0) {
+            yPos += 8;
+            
+            // 检查是否需要新页面
+            if (yPos > pageHeight - margin) {
+                pdf.addPage();
+                yPos = margin;
+            }
         }
-    };
+        
+        const char = currentCharacters[i];
+        const xPos = margin + (i % charsPerLine) * 8;
+        
+        // 添加序号
+        pdf.setFontSize(10);
+        pdf.text(`${i+1}.`, xPos - 6, yPos);
+        
+        // 添加生字
+        pdf.setFontSize(14);
+        pdf.text(char, xPos, yPos);
+    }
     
-    await html2pdf().set(opt).from(copybookContent).save();
+    // 添加统计信息
+    pdf.setFontSize(10);
+    pdf.setTextColor(100, 100, 100);
+    const date = new Date().toLocaleDateString('zh-CN');
+    const footerText = `共 ${currentCharacters.length} 个生字 - 生成时间: ${date}`;
+    pdf.text(footerText, pageWidth / 2, pageHeight - 10, { align: 'center' });
     
-    // 恢复原始样式
-    copybookContent.style.cssText = originalStyle;
-    
-    // 恢复页面显示
-    allPages.forEach((page, index) => {
-        page.style.display = index === (currentPage - 1) ? 'block' : 'none';
-    });
+    const fileName = getValidFileName(previewTitle.textContent) + '_列表.pdf';
+    pdf.save(fileName);
 }
 
-// 辅助函数：计算A4页面尺寸
-function getA4Dimensions() {
-    // A4尺寸：210mm x 297mm
-    const mmToPx = 3.78; // 1mm ≈ 3.78px
-    return {
-        width: 210 * mmToPx,
-        height: 297 * mmToPx
-    };
-}
 
-
+        
 
         
     // 辅助函数：将十六进制颜色转换为RGB
