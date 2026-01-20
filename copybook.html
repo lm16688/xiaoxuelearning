@@ -1487,39 +1487,7 @@ function getA4Dimensions() {
     };
 }
 
-// 切换到PDF模式
-function switchToPDFMode() {
-    document.body.classList.add('pdf-mode');
-    
-    // 调整网格样式
-    const gridPages = document.querySelectorAll('.grid-page');
-    gridPages.forEach(page => {
-        page.style.width = '210mm';
-        page.style.margin = '0 auto';
-        page.style.padding = '20mm 15mm';
-        
-        // 确保8列网格
-        const gridRows = page.querySelectorAll('.grid-row');
-        gridRows.forEach(row => {
-            row.style.display = 'grid';
-            row.style.gridTemplateColumns = 'repeat(8, 1fr)';
-            row.style.gap = '0';
-        });
-        
-        // 调整单元格尺寸
-        const gridCells = page.querySelectorAll('.grid-cell');
-        gridCells.forEach(cell => {
-            cell.style.width = '100%';
-            cell.style.height = '25mm';
-            cell.style.border = '0.5px solid #999';
-        });
-    });
-}
 
-// 恢复普通模式
-function switchToNormalMode() {
-    document.body.classList.remove('pdf-mode');
-}
 
         
     // 辅助函数：将十六进制颜色转换为RGB
