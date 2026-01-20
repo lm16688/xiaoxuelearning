@@ -644,6 +644,38 @@
                 flex-direction: column;
             }
         }
+        @media print {
+  /* 控制分页行为 */
+  .page-break {
+    page-break-before: always;
+    page-break-after: always;
+    page-break-inside: avoid;
+  }
+  
+  /* 防止内容被分割 */
+  .no-break {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  
+  /* 确保元素不被分割 */
+  table, figure, img, div.section {
+    page-break-inside: avoid;
+  }
+  
+  /* 分页前后的间距控制 */
+  h1, h2, h3 {
+    page-break-after: avoid;
+  }
+  
+  /* 设置PDF页面尺寸 */
+  @page {
+    size: A4; /* 或 letter, legal, A3 等 */
+    margin: 20mm 15mm; /* 调整边距 */
+  }
+}
+
+        
     </style>
 </head>
 <body>
