@@ -1271,3 +1271,147 @@ button, .character-card-item, .character-item {
     background-color: white;
 }
 
+/* 打印样式 */
+@media print {
+    body {
+        margin: 0 !important;
+        padding: 0 !important;
+        background: white !important;
+    }
+    
+    .container {
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    .navbar,
+    .header,
+    .settings-panel,
+    .preview-controls,
+    .preview-footer,
+    #error-message,
+    #success-message,
+    .preview-header {
+        display: none !important;
+    }
+    
+    .copybook-container {
+        display: block !important;
+    }
+    
+    .copybook-preview {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+        background: white !important;
+        border: none !important;
+    }
+    
+    .copybook-content {
+        width: 100% !important;
+        border: none !important;
+    }
+    
+    .grid-page {
+        display: block !important;
+        page-break-after: always;
+        margin: 0 !important;
+        padding: 10mm 5mm !important;
+    }
+    
+    .grid-page:last-child {
+        page-break-after: auto;
+    }
+    
+    .grid-row {
+        min-width: 100% !important;
+    }
+    
+    .grid-cell {
+        border-color: #ccc !important;
+        background: white !important;
+    }
+    
+    .grid-cell .grid-lines .line {
+        background-color: #eee !important;
+    }
+    
+    .grid-cell .character {
+        font-size: 28px !important;
+        color: black !important;
+    }
+}
+
+/* PDF专用样式 */
+.pdf-mode .copybook-content {
+    width: 210mm !important;
+    margin: 0 auto !important;
+}
+
+.pdf-mode .grid-page {
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.pdf-mode .grid-row {
+    display: grid !important;
+    grid-template-columns: repeat(8, 1fr) !important;
+    width: 100% !important;
+}
+
+.pdf-mode .grid-cell {
+    width: 100% !important;
+    height: 25mm !important;
+    border: 0.5px solid #999 !important;
+}
+
+/* PDF模式样式 */
+.pdf-mode .copybook-content {
+    width: 794px !important;
+    margin: 0 auto !important;
+    box-shadow: none !important;
+    border: none !important;
+}
+
+.pdf-mode .grid-page {
+    width: 794px !important;
+    min-height: 1123px !important;
+    padding: 40px !important;
+    box-sizing: border-box !important;
+    page-break-after: always !important;
+    margin-bottom: 0 !important;
+}
+
+.pdf-mode .grid-row {
+    display: flex !important;
+    width: 100% !important;
+    justify-content: space-between !important;
+    margin-bottom: 10px !important;
+}
+
+.pdf-mode .grid-cell {
+    width: 90px !important; /* (794 - 80) / 8 = 89.25 */
+    height: 90px !important;
+    flex-shrink: 0 !important;
+    border: 1px solid #999 !important;
+}
+
+/* 分页符 */
+.page-break {
+    page-break-before: always !important;
+    break-before: page !important;
+}
+
+/* 打印样式优化 */
+@media print {
+    .grid-page {
+        page-break-after: always;
+    }
+    
+    .grid-page:last-child {
+        page-break-after: auto;
+    }
+}
