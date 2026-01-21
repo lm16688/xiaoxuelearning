@@ -461,33 +461,37 @@
         .grid-page {
             display: none;
             width: 100%;
-            min-height: 800px; /* 确保足够高度显示所有行 */
+            padding: 20px;
+            box-sizing: border-box;
         }
         
         .grid-page.active {
             display: block;
         }
         
+        /* 修复：确保每行高度一致，单元格为正方形 */
         .grid-row {
             display: flex;
             width: 100%;
-            height: 80px; /* 固定行高，确保每行高度一致 */
+            margin-bottom: 2px; /* 减小行间距 */
         }
         
+        /* 关键修复：确保单元格为正方形，高度自适应宽度 */
         .grid-cell {
             flex: 1;
             position: relative;
             border: 1px solid #ddd;
-            height: 100%; /* 继承父元素高度 */
-            min-height: 80px;
+            /* 关键：使用padding-bottom技巧创建正方形 */
+            height: 0;
+            padding-bottom: calc(100% / var(--cols-per-row, 8));
+            min-height: 60px; /* 最小高度保证在移动端可读 */
+            box-sizing: border-box;
+            background-color: white; /* 确保背景为白色 */
         }
         
-        .grid-cell:nth-child(odd) {
-            border-right: 1px solid #ddd;
-        }
-        
-        .grid-cell:last-child {
-            border-right: 1px solid #ddd;
+        /* 修复边界线 */
+        .grid-cell + .grid-cell {
+            border-left: none;
         }
         
         .grid-cell .grid-lines {
@@ -496,6 +500,7 @@
             left: 0;
             width: 100%;
             height: 100%;
+            pointer-events: none;
         }
         
         .grid-cell .grid-lines .line {
@@ -540,10 +545,21 @@
             transform: translate(-50%, -50%);
             text-align: center;
             z-index: 2;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
+        /* 空单元格保持灰色背景 */
         .empty-cell {
-            background-color: #f9f9f9;
+            background-color: #f9f9f9 !important;
+        }
+        
+        /* 非空单元格保持白色背景 */
+        .grid-cell:not(.empty-cell) {
+            background-color: white !important;
         }
         
         .preview-footer {
@@ -621,12 +637,23 @@
                 flex-direction: column;
             }
             
-            .grid-row {
-                height: 60px; /* 移动端行高减小 */
+            /* 移动端调整 */
+            .grid-cell {
+                min-height: 50px;
             }
             
+            .grid-cell .character {
+                font-size: 24px;
+            }
+        }
+        
+        @media (max-width: 480px) {
             .grid-cell {
-                min-height: 60px;
+                min-height: 40px;
+            }
+            
+            .grid-cell .character {
+                font-size: 20px;
             }
         }
     </style>
@@ -1083,7 +1110,7 @@
         }
     }
 
-    // 生成字帖 - 确保每页显示10个生字
+    // 生成字帖 - 修复单元格为正方形
     function generateCopybook() {
         if (currentCharacters.length === 0) {
             showError('请先选择年级或上传Excel文件');
@@ -1113,8 +1140,11 @@
                 const pageElement = document.createElement('div');
                 pageElement.className = `grid-page ${page === 1 ? 'active' : ''}`;
                 pageElement.id = `page-${page}`;
-                pageElement.style.padding = '20px'; // 添加内边距确保内容完整
-                pageElement.style.boxSizing = 'border-box';
+                pageElement.style.cssText = `
+                    padding: 20px;
+                    box-sizing: border-box;
+                    width: 100%;
+                `;
                 
                 // 计算当前页的生字
                 const startIndex = (page - 1) * rowsPerPage;
@@ -1127,6 +1157,11 @@
                 for (let row = 0; row < rowsPerPage; row++) {
                     const rowElement = document.createElement('div');
                     rowElement.className = 'grid-row';
+                    rowElement.style.cssText = `
+                        display: flex;
+                        width: 100%;
+                        margin-bottom: 2px;
+                    `;
                     
                     // 当前行是否有生字
                     const hasCharacter = row < pageCharacters.length;
@@ -1136,6 +1171,8 @@
                     for (let col = 0; col < colsPerRow; col++) {
                         const cellElement = document.createElement('div');
                         cellElement.className = 'grid-cell';
+                        // 设置CSS变量，用于计算正方形
+                        cellElement.style.setProperty('--cols-per-row', colsPerRow);
                         
                         // 添加方格线
                         const gridLines = document.createElement('div');
@@ -1162,21 +1199,40 @@
                             const characterElement = document.createElement('div');
                             characterElement.className = 'character';
                             characterElement.textContent = currentCharacter;
-                            characterElement.style.fontFamily = currentSettings.fontFamily;
-                            characterElement.style.fontSize = `${currentSettings.fontSize}px`;
-                            characterElement.style.fontWeight = currentSettings.fontWeight;
-                            characterElement.style.color = currentSettings.fontColor;
+                            characterElement.style.cssText = `
+                                font-family: ${currentSettings.fontFamily};
+                                font-size: ${currentSettings.fontSize}px;
+                                font-weight: ${currentSettings.fontWeight};
+                                color: ${currentSettings.fontColor};
+                                position: absolute;
+                                top: 50%;
+                                left: 50%;
+                                transform: translate(-50%, -50%);
+                                text-align: center;
+                                z-index: 2;
+                                width: 100%;
+                                height: 100%;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                            `;
                             
                             // 添加调试信息
                             characterElement.dataset.index = startIndex + row;
                             
                             cellElement.appendChild(characterElement);
                             
-                            // 移除空单元格类
-                            cellElement.classList.remove('empty-cell');
+                            // 确保非空单元格为白色背景
+                            cellElement.style.backgroundColor = 'white';
                         } else {
-                            // 其他格子为空
+                            // 其他格子为空，设置为灰色背景
                             cellElement.classList.add('empty-cell');
+                            cellElement.style.backgroundColor = '#f9f9f9';
+                        }
+                        
+                        // 修复边界线
+                        if (col < colsPerRow - 1) {
+                            cellElement.style.borderRight = '1px solid #ddd';
                         }
                         
                         rowElement.appendChild(cellElement);
@@ -1223,7 +1279,7 @@
             .substring(0, 50) || '字帖';    // 限制长度
     }
    
-    // 下载为Word文档 - 修复版：确保每页10个生字都完整显示
+    // 下载为Word文档
     async function downloadAsWord() {
         if (currentCharacters.length === 0) {
             showError('请先生成字帖');
@@ -1268,13 +1324,13 @@
                     try {
                         console.log(`正在生成第 ${i} 页图片...`);
                         
-                        // 确保页面元素有足够的高度显示所有内容
-                        const rowsPerPage = currentSettings.rowsPerPage;
-                        const rowHeight = 80; // 每行高度
-                        const pageHeight = rowsPerPage * rowHeight + 40; // 总高度 + 内边距
+                        // 确保页面元素正确显示
+                        pageElement.style.display = 'block';
+                        pageElement.style.visibility = 'visible';
+                        pageElement.style.opacity = '1';
                         
-                        pageElement.style.height = `${pageHeight}px`;
-                        pageElement.style.overflow = 'visible'; // 确保内容不隐藏
+                        // 等待DOM更新
+                        await new Promise(resolve => setTimeout(resolve, 100));
                         
                         // 使用html2canvas将页面转换为图片
                         const canvas = await html2canvas(pageElement, {
@@ -1283,8 +1339,8 @@
                             useCORS: true,
                             logging: false,
                             allowTaint: true,
-                            width: pageElement.scrollWidth, // 使用实际宽度
-                            height: pageElement.scrollHeight, // 使用实际高度
+                            width: pageElement.scrollWidth,
+                            height: pageElement.scrollHeight,
                             windowWidth: pageElement.scrollWidth,
                             windowHeight: pageElement.scrollHeight,
                             onclone: function(clonedDoc) {
@@ -1292,9 +1348,8 @@
                                 const clonedPage = clonedDoc.getElementById(`page-${i}`);
                                 if (clonedPage) {
                                     clonedPage.style.display = 'block';
-                                    clonedPage.style.overflow = 'visible';
-                                    clonedPage.style.height = 'auto';
-                                    clonedPage.style.minHeight = `${pageHeight}px`;
+                                    clonedPage.style.visibility = 'visible';
+                                    clonedPage.style.opacity = '1';
                                 }
                             }
                         });
@@ -1318,8 +1373,6 @@
             // 恢复原始显示状态
             originalPages.forEach((page, index) => {
                 page.style.display = originalDisplayStates[index] || (page.classList.contains('active') ? 'block' : 'none');
-                page.style.height = ''; // 恢复高度
-                page.style.overflow = ''; // 恢复溢出设置
             });
             
             previewControls.style.display = originalControlsDisplay;
