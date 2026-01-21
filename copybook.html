@@ -456,7 +456,7 @@
             border: 1px solid #ddd;
             border-radius: 4px;
             overflow: hidden;
-            min-height: 900px; /* 确保足够高度显示所有行 */
+            min-height: 1000px; /* 确保足够高度显示所有行 */
         }
         
         .grid-page {
@@ -470,27 +470,42 @@
             display: block;
         }
         
-        /* 修复：确保每行高度一致，单元格为正方形 */
-        .grid-row {
-            display: flex;
+        /* 关键修复：使用CSS Grid确保每个格子都是正方形 */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr); /* 每行8个格子 */
+            grid-template-rows: repeat(10, 1fr);   /* 每页10行 */
+            gap: 0;
             width: 100%;
-            margin-bottom: 1px; /* 减小行间距 */
+            height: 900px; /* 固定高度确保正方形 */
         }
         
-        /* 关键修复：确保单元格为正方形，使用固定高度而不是百分比 */
+        /* 确保每个格子都是真正的正方形 */
         .grid-cell {
-            flex: 1;
             position: relative;
             border: 1px solid #ddd;
-            height: 80px; /* 固定高度，确保正方形 */
-            min-width: 0; /* 防止flex item溢出 */
+            aspect-ratio: 1 / 1; /* 关键：确保宽高比1:1 */
+            width: 100%;
+            height: auto;
             box-sizing: border-box;
             background-color: white;
+            overflow: hidden;
         }
         
         /* 修复边界线 */
-        .grid-cell + .grid-cell {
-            border-left: none;
+        .grid-cell {
+            border-right: 1px solid #ddd;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        /* 每行的最后一个单元格 */
+        .grid-cell:nth-child(8n) {
+            border-right: 1px solid #ddd;
+        }
+        
+        /* 最后一行的单元格 */
+        .grid-cell:nth-child(n+73):nth-child(-n+80) {
+            border-bottom: 1px solid #ddd;
         }
         
         .grid-cell .grid-lines {
@@ -625,6 +640,10 @@
                 width: 100%;
                 position: static;
             }
+            
+            .grid-container {
+                height: 700px; /* 调整高度适应屏幕 */
+            }
         }
         
         @media (max-width: 768px) {
@@ -637,8 +656,8 @@
             }
             
             /* 移动端调整 */
-            .grid-cell {
-                height: 60px; /* 移动端减小高度 */
+            .grid-container {
+                height: 600px; /* 移动端减小高度 */
             }
             
             .grid-cell .character {
@@ -647,8 +666,8 @@
         }
         
         @media (max-width: 480px) {
-            .grid-cell {
-                height: 50px;
+            .grid-container {
+                height: 500px;
             }
             
             .grid-cell .character {
@@ -819,7 +838,7 @@
                     <div id="grid-pages">
                         <!-- 字帖页面会在这里动态生成 -->
                         <div class="grid-page active" id="page-1">
-                            <!-- 网格行会在这里动态生成 -->
+                            <!-- 网格容器会在这里动态生成 -->
                         </div>
                     </div>
                 </div>
@@ -1109,7 +1128,7 @@
         }
     }
 
-    // 生成字帖 - 修复单元格为正方形且确保所有行都显示
+    // 生成字帖 - 使用CSS Grid确保每个格子都是正方形
     function generateCopybook() {
         if (currentCharacters.length === 0) {
             showError('请先选择年级或上传Excel文件');
@@ -1143,7 +1162,19 @@
                     padding: 20px;
                     box-sizing: border-box;
                     width: 100%;
-                    min-height: ${rowsPerPage * 85}px; /* 确保足够高度显示所有行 */
+                    min-height: 950px;
+                `;
+                
+                // 创建网格容器
+                const gridContainer = document.createElement('div');
+                gridContainer.className = 'grid-container';
+                gridContainer.style.cssText = `
+                    display: grid;
+                    grid-template-columns: repeat(${colsPerRow}, 1fr);
+                    grid-template-rows: repeat(${rowsPerPage}, 1fr);
+                    gap: 0;
+                    width: 100%;
+                    height: 900px;
                 `;
                 
                 // 计算当前页的生字
@@ -1153,104 +1184,89 @@
                 
                 console.log(`第${page}页: 生字索引 ${startIndex}-${endIndex-1}, 生字数: ${pageCharacters.length}`);
                 
-                // 为当前页的每个生字生成一行
-                for (let row = 0; row < rowsPerPage; row++) {
-                    const rowElement = document.createElement('div');
-                    rowElement.className = 'grid-row';
-                    rowElement.style.cssText = `
-                        display: flex;
-                        width: 100%;
-                        margin-bottom: 1px;
-                        min-height: 80px; /* 确保行有足够高度 */
-                    `;
-                    
-                    // 当前行是否有生字
-                    const hasCharacter = row < pageCharacters.length;
+                // 生成所有格子（10行 × 8列 = 80个格子）
+                for (let i = 0; i < rowsPerPage * colsPerRow; i++) {
+                    const row = Math.floor(i / colsPerRow);
+                    const col = i % colsPerRow;
+                    const hasCharacter = row < pageCharacters.length && col === 0;
                     const currentCharacter = hasCharacter ? pageCharacters[row] : '';
                     
-                    // 生成8个格子
-                    for (let col = 0; col < colsPerRow; col++) {
-                        const cellElement = document.createElement('div');
-                        cellElement.className = 'grid-cell';
-                        cellElement.style.cssText = `
-                            flex: 1;
-                            position: relative;
-                            border: 1px solid #ddd;
-                            height: 80px;
-                            min-width: 0;
-                            box-sizing: border-box;
-                            ${col < colsPerRow - 1 ? 'border-right: 1px solid #ddd;' : ''}
-                            ${hasCharacter && col === 0 ? 'background-color: white;' : 'background-color: #f9f9f9;'}
+                    const cellElement = document.createElement('div');
+                    cellElement.className = 'grid-cell';
+                    cellElement.style.cssText = `
+                        position: relative;
+                        border: 1px solid #ddd;
+                        aspect-ratio: 1 / 1;
+                        width: 100%;
+                        height: auto;
+                        box-sizing: border-box;
+                        ${hasCharacter ? 'background-color: white;' : 'background-color: #f9f9f9;'}
+                    `;
+                    
+                    // 添加方格线
+                    const gridLines = document.createElement('div');
+                    gridLines.className = 'grid-lines';
+                    gridLines.style.cssText = `
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        pointer-events: none;
+                    `;
+                    
+                    if (currentSettings.gridType === 'tian') {
+                        gridLines.innerHTML = `
+                            <div class="line center-vertical" style="position:absolute;width:1px;height:100%;left:50%;transform:translateX(-50%);background-color:#eee;"></div>
+                            <div class="line center-horizontal" style="position:absolute;height:1px;width:100%;top:50%;transform:translateY(-50%);background-color:#eee;"></div>
                         `;
-                        
-                        // 添加方格线
-                        const gridLines = document.createElement('div');
-                        gridLines.className = 'grid-lines';
-                        gridLines.style.cssText = `
-                            position: absolute;
-                            top: 0;
-                            left: 0;
-                            width: 100%;
-                            height: 100%;
-                            pointer-events: none;
+                    } else if (currentSettings.gridType === 'mi') {
+                        gridLines.innerHTML = `
+                            <div class="line center-vertical" style="position:absolute;width:1px;height:100%;left:50%;transform:translateX(-50%);background-color:#eee;"></div>
+                            <div class="line center-horizontal" style="position:absolute;height:1px;width:100%;top:50%;transform:translateY(-50%);background-color:#eee;"></div>
+                            <div class="line diagonal-1" style="position:absolute;width:1px;height:141%;left:50%;top:-20%;transform:translateX(-50%) rotate(45deg);background-color:#eee;"></div>
+                            <div class="line diagonal-2" style="position:absolute;width:1px;height:141%;left:50%;top:-20%;transform:translateX(-50%) rotate(-45deg);background-color:#eee;"></div>
                         `;
-                        
-                        if (currentSettings.gridType === 'tian') {
-                            gridLines.innerHTML = `
-                                <div class="line center-vertical" style="position:absolute;width:1px;height:100%;left:50%;transform:translateX(-50%);background-color:#eee;"></div>
-                                <div class="line center-horizontal" style="position:absolute;height:1px;width:100%;top:50%;transform:translateY(-50%);background-color:#eee;"></div>
-                            `;
-                        } else if (currentSettings.gridType === 'mi') {
-                            gridLines.innerHTML = `
-                                <div class="line center-vertical" style="position:absolute;width:1px;height:100%;left:50%;transform:translateX(-50%);background-color:#eee;"></div>
-                                <div class="line center-horizontal" style="position:absolute;height:1px;width:100%;top:50%;transform:translateY(-50%);background-color:#eee;"></div>
-                                <div class="line diagonal-1" style="position:absolute;width:1px;height:141%;left:50%;top:-20%;transform:translateX(-50%) rotate(45deg);background-color:#eee;"></div>
-                                <div class="line diagonal-2" style="position:absolute;width:1px;height:141%;left:50%;top:-20%;transform:translateX(-50%) rotate(-45deg);background-color:#eee;"></div>
-                            `;
-                        }
-                        
-                        cellElement.appendChild(gridLines);
-                        
-                        // 如果是第一个单元格且有生字，显示生字
-                        if (col === 0 && hasCharacter) {
-                            const characterElement = document.createElement('div');
-                            characterElement.className = 'character';
-                            characterElement.textContent = currentCharacter;
-                            characterElement.style.cssText = `
-                                font-family: ${currentSettings.fontFamily};
-                                font-size: ${currentSettings.fontSize}px;
-                                font-weight: ${currentSettings.fontWeight};
-                                color: ${currentSettings.fontColor};
-                                position: absolute;
-                                top: 50%;
-                                left: 50%;
-                                transform: translate(-50%, -50%);
-                                text-align: center;
-                                z-index: 2;
-                                width: 100%;
-                                height: 100%;
-                                display: flex;
-                                align-items: center;
-                                justify-content: center;
-                            `;
-                            
-                            // 添加调试信息
-                            characterElement.dataset.index = startIndex + row;
-                            characterElement.dataset.character = currentCharacter;
-                            
-                            cellElement.appendChild(characterElement);
-                            cellElement.classList.remove('empty-cell');
-                        } else {
-                            // 其他格子为空
-                            cellElement.classList.add('empty-cell');
-                        }
-                        
-                        rowElement.appendChild(cellElement);
                     }
                     
-                    pageElement.appendChild(rowElement);
+                    cellElement.appendChild(gridLines);
+                        
+                    // 如果是每行的第一个单元格且有生字，显示生字
+                    if (hasCharacter) {
+                        const characterElement = document.createElement('div');
+                        characterElement.className = 'character';
+                        characterElement.textContent = currentCharacter;
+                        characterElement.style.cssText = `
+                            font-family: ${currentSettings.fontFamily};
+                            font-size: ${currentSettings.fontSize}px;
+                            font-weight: ${currentSettings.fontWeight};
+                            color: ${currentSettings.fontColor};
+                            position: absolute;
+                            top: 50%;
+                            left: 50%;
+                            transform: translate(-50%, -50%);
+                            text-align: center;
+                            z-index: 2;
+                            width: 100%;
+                            height: 100%;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                        `;
+                        
+                        characterElement.dataset.index = startIndex + row;
+                        characterElement.dataset.character = currentCharacter;
+                        
+                        cellElement.appendChild(characterElement);
+                        cellElement.classList.remove('empty-cell');
+                    } else {
+                        cellElement.classList.add('empty-cell');
+                    }
+                    
+                    gridContainer.appendChild(cellElement);
                 }
                 
+                pageElement.appendChild(gridContainer);
                 gridPagesContainer.appendChild(pageElement);
             }
             
@@ -1267,7 +1283,7 @@
             
             console.log(`字帖生成完成: 总生字数 ${currentCharacters.length}, 总页数 ${totalPages}`);
             console.log('检查页面元素:', document.querySelectorAll('.grid-page').length, '页');
-            console.log('检查第一页行数:', document.querySelector('#page-1 .grid-row').length, '行');
+            console.log('检查第一页格子数:', document.querySelector('#page-1 .grid-cell').length, '个格子');
             
             setTimeout(() => {
                 hideLoading();
@@ -1291,7 +1307,7 @@
             .substring(0, 50) || '字帖';    // 限制长度
     }
    
-    // 下载为Word文档 - 修复版：确保所有10行都能完整显示
+    // 下载为Word文档 - 确保所有10行都能完整显示
     async function downloadAsWord() {
         if (currentCharacters.length === 0) {
             showError('请先生成字帖');
@@ -1330,7 +1346,6 @@
             const pageImages = [];
             
             console.log(`开始生成Word文档，共 ${totalPages} 页`);
-            console.log('页面高度检查:', document.querySelector('.grid-page').offsetHeight);
             
             // 为每个页面生成图片
             for (let i = 1; i <= totalPages; i++) {
@@ -1340,46 +1355,52 @@
                         console.log(`正在生成第 ${i} 页图片...`);
                         
                         // 确保页面元素有正确的高度和显示
-                        const rowsPerPage = currentSettings.rowsPerPage;
-                        const rowHeight = 81; // 每行高度（80px + 1px边框）
-                        const pageHeight = rowsPerPage * rowHeight + 40; // 总高度 + 内边距
-                        
                         pageElement.style.cssText = `
                             display: block !important;
                             visibility: visible !important;
                             opacity: 1 !important;
                             position: relative !important;
                             width: 100% !important;
-                            min-height: ${pageHeight}px !important;
+                            min-height: 950px !important;
                             height: auto !important;
                             overflow: visible !important;
                             padding: 20px !important;
                             box-sizing: border-box !important;
                         `;
                         
-                        // 强制页面重绘
+                        // 确保网格容器正确显示
+                        const gridContainer = pageElement.querySelector('.grid-container');
+                        if (gridContainer) {
+                            gridContainer.style.cssText = `
+                                display: grid !important;
+                                grid-template-columns: repeat(8, 1fr) !important;
+                                grid-template-rows: repeat(10, 1fr) !important;
+                                gap: 0 !important;
+                                width: 100% !important;
+                                height: 900px !important;
+                                visibility: visible !important;
+                                opacity: 1 !important;
+                            `;
+                        }
+                        
+                        // 等待页面重绘
                         await new Promise(resolve => {
                             pageElement.offsetHeight; // 触发重绘
                             setTimeout(resolve, 100);
                         });
                         
-                        // 检查页面实际内容
-                        const rows = pageElement.querySelectorAll('.grid-row');
-                        console.log(`第 ${i} 页实际行数: ${rows.length}, 应有行数: ${rowsPerPage}`);
-                        
-                        // 使用html2canvas将页面转换为图片 - 优化配置
+                        // 使用html2canvas将页面转换为图片
                         const canvas = await html2canvas(pageElement, {
                             scale: 2, // 提高分辨率
                             backgroundColor: '#ffffff',
                             useCORS: true,
-                            logging: true, // 开启日志查看问题
+                            logging: false,
                             allowTaint: true,
                             width: pageElement.offsetWidth,
                             height: pageElement.scrollHeight,
                             windowWidth: pageElement.scrollWidth,
                             windowHeight: pageElement.scrollHeight,
                             ignoreElements: function(element) {
-                                // 忽略不需要的元素
                                 return element.classList.contains('preview-controls') || 
                                        element.classList.contains('preview-footer');
                             },
@@ -1393,25 +1414,26 @@
                                         opacity: 1 !important;
                                         position: relative !important;
                                         width: 100% !important;
-                                        min-height: ${pageHeight}px !important;
+                                        min-height: 950px !important;
                                         height: auto !important;
                                         overflow: visible !important;
                                         padding: 20px !important;
                                         box-sizing: border-box !important;
                                     `;
                                     
-                                    // 确保所有行都显示
-                                    const clonedRows = clonedPage.querySelectorAll('.grid-row');
-                                    clonedRows.forEach(row => {
-                                        row.style.cssText = `
-                                            display: flex !important;
+                                    const clonedGrid = clonedPage.querySelector('.grid-container');
+                                    if (clonedGrid) {
+                                        clonedGrid.style.cssText = `
+                                            display: grid !important;
+                                            grid-template-columns: repeat(8, 1fr) !important;
+                                            grid-template-rows: repeat(10, 1fr) !important;
+                                            gap: 0 !important;
                                             width: 100% !important;
-                                            margin-bottom: 1px !important;
-                                            min-height: 80px !important;
+                                            height: 900px !important;
                                             visibility: visible !important;
                                             opacity: 1 !important;
                                         `;
-                                    });
+                                    }
                                 }
                             }
                         });
@@ -1422,16 +1444,8 @@
                         
                         console.log(`第 ${i} 页图片生成成功，尺寸: ${canvas.width}x${canvas.height}`);
                         
-                        // 验证图片内容
-                        const tempImg = new Image();
-                        tempImg.src = imageData;
-                        tempImg.onload = function() {
-                            console.log(`第 ${i} 页图片实际尺寸: ${this.width}x${this.height}`);
-                        };
-                        
                     } catch (error) {
                         console.error(`第 ${i} 页图片生成失败:`, error);
-                        console.error('详细错误:', error.stack);
                         throw new Error(`第 ${i} 页转换为图片失败: ${error.message}`);
                     }
                 } else {
@@ -1550,11 +1564,11 @@
                     </div>
                 `;
                 
-                // 嵌入图片 - 设置固定高度确保完整显示
+                // 嵌入图片
                 wordHTML += `
                     <div class="image-container">
                         <img src="${imageData}" class="copybook-image" alt="字帖第${pageNumber}页" 
-                             style="width: 100%; max-width: 17cm; height: auto; min-height: 10cm;" />
+                             style="width: 100%; max-width: 17cm; height: auto;" />
                     </div>
                 `;
                 
@@ -1623,203 +1637,6 @@
             'Microsoft YaHei, sans-serif': '微软雅黑'
         };
         return fontMap[fontFamily] || '楷体';
-    }
-    
-    // 备用Word导出方案 - 直接创建表格（确保所有内容都显示）
-    async function downloadAsWordBackup() {
-        const title = previewTitle.textContent || '小学语文生字字帖';
-        const date = new Date().toLocaleDateString('zh-CN');
-        const fileName = getValidFileName(title) + '_表格版.doc';
-        
-        // 计算每页显示的字符
-        const rowsPerPage = currentSettings.rowsPerPage;
-        const colsPerRow = currentSettings.colsPerPage;
-        const totalPages = Math.ceil(currentCharacters.length / rowsPerPage);
-        
-        // 创建Word文档内容 - 直接使用表格
-        let wordHTML = `
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset="UTF-8">
-                <title>${title}</title>
-                <style>
-                    body { 
-                        font-family: 'Microsoft YaHei', 'SimSun', sans-serif; 
-                        margin: 2cm;
-                        line-height: 1.5;
-                    }
-                    .page { 
-                        margin-bottom: 2cm;
-                        page-break-after: always;
-                    }
-                    h1 { 
-                        color: #4a6fa5; 
-                        text-align: center; 
-                        margin-bottom: 0.5cm;
-                        font-size: 24pt;
-                    }
-                    .page-info {
-                        text-align: center;
-                        color: #666;
-                        margin-bottom: 1cm;
-                        font-size: 11pt;
-                    }
-                    table {
-                        width: 100%;
-                        border-collapse: collapse;
-                        margin-top: 0.5cm;
-                        table-layout: fixed;
-                    }
-                    td {
-                        border: 1px solid #333;
-                        width: ${100 / colsPerRow}%;
-                        height: 2.5cm;
-                        text-align: center;
-                        vertical-align: middle;
-                        position: relative;
-                    }
-                    .grid-cell {
-                        position: absolute;
-                        top: 0;
-                        left: 0;
-                        width: 100%;
-                        height: 100%;
-                        pointer-events: none;
-                    }
-                    .grid-line {
-                        position: absolute;
-                        background-color: #ddd;
-                    }
-                    .center-vertical {
-                        width: 1px;
-                        height: 100%;
-                        left: 50%;
-                        top: 0;
-                    }
-                    .center-horizontal {
-                        height: 1px;
-                        width: 100%;
-                        top: 50%;
-                        left: 0;
-                    }
-                    .diagonal-1 {
-                        width: 1px;
-                        height: 141%;
-                        left: 50%;
-                        top: -20%;
-                        transform: rotate(45deg);
-                    }
-                    .diagonal-2 {
-                        width: 1px;
-                        height: 141%;
-                        left: 50%;
-                        top: -20%;
-                        transform: rotate(-45deg);
-                    }
-                    .character {
-                        font-size: 36pt;
-                        font-family: ${currentSettings.fontFamily};
-                        font-weight: ${currentSettings.fontWeight};
-                        color: ${currentSettings.fontColor};
-                        z-index: 2;
-                        position: relative;
-                    }
-                    .empty-cell {
-                        background-color: #f9f9f9;
-                    }
-                    .footer {
-                        text-align: center;
-                        margin-top: 1cm;
-                        color: #888;
-                        font-size: 9pt;
-                    }
-                    @page { 
-                        size: A4 portrait; 
-                        margin: 2cm; 
-                    }
-                </style>
-            </head>
-            <body>
-                <h1>${title}</h1>
-                <div class="page-info">共 ${currentCharacters.length} 个生字 - ${currentSettings.gridType === 'tian' ? '田字格' : '米字格'}练习本 - 生成日期: ${date}</div>
-        `;
-        
-        // 生成每一页
-        for (let page = 1; page <= totalPages; page++) {
-            wordHTML += `<div class="page">`;
-            wordHTML += `<div class="page-info" style="margin-bottom: 0.5cm;">第 ${page} 页 / 共 ${totalPages} 页 - 每页${rowsPerPage}个生字</div>`;
-            wordHTML += `<table cellspacing="0" cellpadding="0">`;
-            
-            // 计算当前页的生字
-            const startIndex = (page - 1) * rowsPerPage;
-            const endIndex = Math.min(startIndex + rowsPerPage, currentCharacters.length);
-            const pageCharacters = currentCharacters.slice(startIndex, endIndex);
-            
-            // 生成每一行
-            for (let row = 0; row < rowsPerPage; row++) {
-                wordHTML += `<tr style="height: 2.5cm;">`;
-                
-                const hasCharacter = row < pageCharacters.length;
-                const currentCharacter = hasCharacter ? pageCharacters[row] : '';
-                
-                // 生成每行的格子
-                for (let col = 0; col < colsPerRow; col++) {
-                    const isFirstCol = col === 0;
-                    const isEmpty = !hasCharacter || !isFirstCol;
-                    
-                    wordHTML += `<td class="${isEmpty ? 'empty-cell' : ''}" style="position: relative;">`;
-                    
-                    // 添加网格线
-                    wordHTML += `<div class="grid-cell">`;
-                    wordHTML += `<div class="grid-line center-vertical"></div>`;
-                    wordHTML += `<div class="grid-line center-horizontal"></div>`;
-                    if (currentSettings.gridType === 'mi') {
-                        wordHTML += `<div class="grid-line diagonal-1"></div>`;
-                        wordHTML += `<div class="grid-line diagonal-2"></div>`;
-                    }
-                    wordHTML += `</div>`;
-                    
-                    // 如果是第一个格子且有生字，显示生字
-                    if (isFirstCol && hasCharacter) {
-                        wordHTML += `<div class="character">${currentCharacter}</div>`;
-                    }
-                    
-                    wordHTML += `</td>`;
-                }
-                
-                wordHTML += `</tr>`;
-            }
-            
-            wordHTML += `</table>`;
-            
-            // 添加生字列表
-            if (pageCharacters.length > 0) {
-                wordHTML += `<div style="text-align: center; margin-top: 0.5cm; font-size: 12pt;">
-                    <p style="color: #4a6fa5; font-weight: bold;">本页生字 (${pageCharacters.length}个):</p>
-                    <p style="letter-spacing: 5px;">${pageCharacters.join(' ')}</p>
-                </div>`;
-            }
-            
-            wordHTML += `</div>`;
-        }
-        
-        wordHTML += `
-                <div class="footer">
-                    <p>小学语文生字字帖生成系统</p>
-                    <p>请在方格内练习书写，每个生字建议练习5-10遍</p>
-                </div>
-            </body>
-            </html>
-        `;
-        
-        // 创建Blob并保存
-        const blob = new Blob(
-            ['\ufeff' + wordHTML],
-            { type: 'application/msword' }
-        );
-        
-        saveAs(blob, fileName);
     }
     
     // 更新字帖预览
