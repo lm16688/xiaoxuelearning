@@ -1147,22 +1147,17 @@
             // 清空现有页面
             gridPagesContainer.innerHTML = '';
             
-            // 计算每个格子的理论尺寸（基于A4纸）
-            // 考虑1px的边框和1px的间距
-            const borderWidth = 1;
-            const gapWidth = 1;
-            const totalBorderAndGap = (colsPerRow * 2 * borderWidth) + ((colsPerRow - 1) * gapWidth);
-            const cellSizePx = Math.floor((usableWidthPx - totalBorderAndGap) / colsPerRow);
+            // 计算每个格子的尺寸，确保正方形且适应A4纸
+            // 使用可用宽度的90%来确保有边距
+            const containerWidth = usableWidthPx * 0.9;
+            const containerHeight = usableHeightPx * 0.8;
             
-            console.log(`每个格子尺寸: ${cellSizePx}px × ${cellSizePx}px`);
-            console.log(`总网格宽度: ${cellSizePx * colsPerRow + totalBorderAndGap}px`);
+            // 计算每个格子的最大可能尺寸
+            const maxCellWidth = Math.floor(containerWidth / colsPerRow);
+            const maxCellHeight = Math.floor(containerHeight / rowsPerPage);
+            const cellSize = Math.min(maxCellWidth, maxCellHeight);
             
-            // 计算需要的总高度
-            const totalCellHeight = cellSizePx * rowsPerPage;
-            const totalBorderHeight = (rowsPerPage * 2 * borderWidth) + ((rowsPerPage - 1) * gapWidth);
-            const totalHeightPx = totalCellHeight + totalBorderHeight;
-            
-            console.log(`总网格高度: ${totalHeightPx}px, A4可用高度: ${usableHeightPx}px`);
+            console.log(`格子尺寸: ${cellSize}px, 容器: ${containerWidth}px × ${containerHeight}px`);
             
             // 生成所有页面
             for (let page = 1; page <= totalPages; page++) {
@@ -1173,10 +1168,10 @@
                     padding: 20px;
                     box-sizing: border-box;
                     width: 100%;
-                    min-height: ${totalHeightPx + 100}px;
                     display: flex;
                     justify-content: center;
                     align-items: flex-start;
+                    background-color: white;
                 `;
                 
                 // 创建网格容器
@@ -1184,12 +1179,13 @@
                 gridContainer.className = 'grid-container';
                 gridContainer.style.cssText = `
                     display: grid;
-                    grid-template-columns: repeat(${colsPerRow}, ${cellSizePx}px);
-                    grid-template-rows: repeat(${rowsPerPage}, ${cellSizePx}px);
-                    gap: ${gapWidth}px;
-                    width: ${cellSizePx * colsPerRow + ((colsPerRow - 1) * gapWidth)}px;
-                    height: ${cellSizePx * rowsPerPage + ((rowsPerPage - 1) * gapWidth)}px;
+                    grid-template-columns: repeat(${colsPerRow}, ${cellSize}px);
+                    grid-template-rows: repeat(${rowsPerPage}, ${cellSize}px);
+                    gap: 1px;
+                    width: ${cellSize * colsPerRow + (colsPerRow - 1)}px;
+                    height: ${cellSize * rowsPerPage + (rowsPerPage - 1)}px;
                     margin: 0 auto;
+                    background-color: #ddd;
                 `;
                 
                 // 计算当前页的生字
@@ -1210,11 +1206,12 @@
                     cellElement.className = 'grid-cell';
                     cellElement.style.cssText = `
                         position: relative;
-                        border: ${borderWidth}px solid #ddd;
-                        width: ${cellSizePx}px;
-                        height: ${cellSizePx}px;
+                        border: none;
+                        width: ${cellSize}px;
+                        height: ${cellSize}px;
                         box-sizing: border-box;
-                        ${hasCharacter ? 'background-color: white;' : 'background-color: #f9f9f9;'}
+                        background-color: white;
+                        overflow: hidden;
                     `;
                     
                     // 添加方格线
@@ -1252,7 +1249,7 @@
                         characterElement.textContent = currentCharacter;
                         characterElement.style.cssText = `
                             font-family: ${currentSettings.fontFamily};
-                            font-size: ${Math.min(currentSettings.fontSize, cellSizePx * 0.6)}px; /* 根据格子大小调整字体 */
+                            font-size: ${Math.min(currentSettings.fontSize, cellSize * 0.6)}px;
                             font-weight: ${currentSettings.fontWeight};
                             color: ${currentSettings.fontColor};
                             position: absolute;
@@ -1275,6 +1272,7 @@
                         cellElement.classList.remove('empty-cell');
                     } else {
                         cellElement.classList.add('empty-cell');
+                        cellElement.style.backgroundColor = '#f9f9f9';
                     }
                     
                     gridContainer.appendChild(cellElement);
@@ -1319,7 +1317,7 @@
             .substring(0, 50) || '字帖';    // 限制长度
     }
    
-    // 下载为Word文档 - 直接创建适合A4纸的HTML表格
+    // 下载为Word文档 - 以图片形式，等比例适应A4纸
     async function downloadAsWord() {
         if (currentCharacters.length === 0) {
             showError('请先生成字帖');
@@ -1334,14 +1332,77 @@
             const date = new Date().toLocaleDateString('zh-CN');
             const fileName = getValidFileName(title) + '.doc';
             
-            const rowsPerPage = currentSettings.rowsPerPage; // 每页10行
-            const colsPerRow = currentSettings.colsPerPage; // 每行8个格子
-            const totalPages = Math.ceil(currentCharacters.length / rowsPerPage);
+            // 收集所有页面的图片数据
+            const pageImages = [];
             
-            // 计算格子大小（毫米）
-            const cellSizeMM = 20; // 每个格子20mm，确保在A4纸上合适
+            console.log(`开始生成Word文档，共 ${totalPages} 页`);
             
-            // 直接创建Word文档HTML
+            // 为每个页面生成图片
+            for (let i = 1; i <= totalPages; i++) {
+                const pageElement = document.getElementById(`page-${i}`);
+                if (pageElement) {
+                    try {
+                        console.log(`正在生成第 ${i} 页图片...`);
+                        
+                        // 确保页面元素正确显示
+                        pageElement.style.display = 'block';
+                        pageElement.style.visibility = 'visible';
+                        pageElement.style.opacity = '1';
+                        pageElement.style.position = 'relative';
+                        
+                        // 等待DOM更新
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                        
+                        // 使用html2canvas将页面转换为高质量图片
+                        const canvas = await html2canvas(pageElement, {
+                            scale: 3, // 提高分辨率，确保清晰度
+                            backgroundColor: '#ffffff',
+                            useCORS: true,
+                            logging: false,
+                            allowTaint: true,
+                            width: pageElement.offsetWidth,
+                            height: pageElement.scrollHeight,
+                            windowWidth: pageElement.scrollWidth,
+                            windowHeight: pageElement.scrollHeight,
+                            onclone: function(clonedDoc) {
+                                // 确保克隆的页面也能正确显示
+                                const clonedPage = clonedDoc.getElementById(`page-${i}`);
+                                if (clonedPage) {
+                                    clonedPage.style.display = 'block';
+                                    clonedPage.style.visibility = 'visible';
+                                    clonedPage.style.opacity = '1';
+                                    clonedPage.style.position = 'relative';
+                                }
+                            }
+                        });
+                        
+                        // 将canvas转换为base64图片
+                        const imageData = canvas.toDataURL('image/png', 1.0);
+                        pageImages.push({
+                            data: imageData,
+                            width: canvas.width,
+                            height: canvas.height
+                        });
+                        
+                        console.log(`第 ${i} 页图片生成成功，原始尺寸: ${canvas.width}x${canvas.height}`);
+                        
+                    } catch (error) {
+                        console.error(`第 ${i} 页图片生成失败:`, error);
+                        throw new Error(`第 ${i} 页转换为图片失败: ${error.message}`);
+                    }
+                } else {
+                    console.error(`找不到第 ${i} 页元素`);
+                    throw new Error(`找不到第 ${i} 页元素`);
+                }
+            }
+            
+            if (pageImages.length === 0) {
+                throw new Error('未能生成任何页面图片');
+            }
+            
+            console.log(`成功生成 ${pageImages.length} 页图片，开始创建Word文档`);
+            
+            // 创建Word文档
             let wordHTML = `
                 <!DOCTYPE html>
                 <html xmlns:o="urn:schemas-microsoft-com:office:office" 
@@ -1369,7 +1430,7 @@
                         }
                         .header {
                             text-align: center;
-                            margin-bottom: 1.5cm;
+                            margin-bottom: 1cm;
                             padding-bottom: 0.5cm;
                             border-bottom: 2px solid #4a6fa5;
                         }
@@ -1389,76 +1450,17 @@
                             font-size: 10pt;
                             margin: 0.1cm 0;
                         }
-                        .copybook-grid {
-                            width: 100%;
-                            margin: 1cm auto;
-                            border-collapse: collapse;
-                            table-layout: fixed;
-                        }
-                        .grid-row {
-                            height: ${cellSizeMM}mm;
-                        }
-                        .grid-cell {
-                            width: ${cellSizeMM}mm;
-                            height: ${cellSizeMM}mm;
-                            border: 1px solid #ddd;
+                        .image-container {
                             text-align: center;
-                            vertical-align: middle;
-                            position: relative;
-                            background-color: white;
-                        }
-                        .empty-cell {
-                            background-color: #f9f9f9 !important;
-                        }
-                        .grid-lines {
-                            position: absolute;
-                            top: 0;
-                            left: 0;
+                            margin: 0.5cm auto;
                             width: 100%;
-                            height: 100%;
-                            pointer-events: none;
                         }
-                        .center-vertical {
-                            position: absolute;
-                            width: 0.5pt;
-                            height: 100%;
-                            left: 50%;
-                            top: 0;
-                            background-color: #eee;
-                        }
-                        .center-horizontal {
-                            position: absolute;
-                            height: 0.5pt;
-                            width: 100%;
-                            top: 50%;
-                            left: 0;
-                            background-color: #eee;
-                        }
-                        .diagonal-1 {
-                            position: absolute;
-                            width: 0.5pt;
-                            height: 141%;
-                            left: 50%;
-                            top: -20%;
-                            background-color: #eee;
-                            transform: rotate(45deg);
-                        }
-                        .diagonal-2 {
-                            position: absolute;
-                            width: 0.5pt;
-                            height: 141%;
-                            left: 50%;
-                            top: -20%;
-                            background-color: #eee;
-                            transform: rotate(-45deg);
-                        }
-                        .character {
-                            font-family: ${currentSettings.fontFamily === 'Ma Shan Zheng, cursive' ? "'楷体', 'SimSun', serif" : currentSettings.fontFamily};
-                            font-size: ${Math.min(currentSettings.fontSize * 0.75, 28)}pt;
-                            font-weight: ${currentSettings.fontWeight};
-                            color: ${currentSettings.fontColor};
-                            position: relative;
-                            z-index: 2;
+                        .copybook-image {
+                            max-width: 100%;
+                            height: auto;
+                            border: 1px solid #eee;
+                            display: block;
+                            margin: 0 auto;
                         }
                         .footer {
                             text-align: center;
@@ -1483,73 +1485,41 @@
             `;
             
             // 为每个页面创建Word页面
-            for (let page = 1; page <= totalPages; page++) {
-                wordHTML += `<div class="word-page ${page < totalPages ? 'page-break' : ''}">`;
+            pageImages.forEach((imageInfo, index) => {
+                const pageNumber = index + 1;
+                wordHTML += `<div class="word-page ${index < pageImages.length - 1 ? 'page-break' : ''}">`;
                 
                 // 页眉
                 wordHTML += `
                     <div class="header">
                         <h1 class="title">${title}</h1>
                         <p class="subtitle">规范书写练习 - 共 ${currentCharacters.length} 个生字</p>
-                        <p class="info">第 ${page} 页 / 共 ${totalPages} 页 - 生成日期: ${date}</p>
+                        <p class="info">第 ${pageNumber} 页 / 共 ${pageImages.length} 页 - 生成日期: ${date}</p>
                         <p class="info">${currentSettings.gridType === 'tian' ? '田字格' : '米字格'} - 字体: ${getFontFamilyName(currentSettings.fontFamily)} - 每页10个生字</p>
                     </div>
                 `;
                 
-                // 创建字帖表格
-                wordHTML += `<table class="copybook-grid" cellspacing="0" cellpadding="0">`;
+                // 嵌入图片 - 等比例适应A4纸
+                const maxImageWidth = '17cm'; // A4纸宽度减去页边距
+                wordHTML += `
+                    <div class="image-container">
+                        <img src="${imageInfo.data}" class="copybook-image" alt="字帖第${pageNumber}页" 
+                             style="max-width: ${maxImageWidth}; height: auto;" />
+                    </div>
+                `;
                 
                 // 计算当前页的生字
-                const startIndex = (page - 1) * rowsPerPage;
-                const endIndex = Math.min(startIndex + rowsPerPage, currentCharacters.length);
+                const startIndex = (pageNumber - 1) * currentSettings.rowsPerPage;
+                const endIndex = Math.min(startIndex + currentSettings.rowsPerPage, currentCharacters.length);
                 const pageCharacters = currentCharacters.slice(startIndex, endIndex);
                 
-                // 生成10行
-                for (let row = 0; row < rowsPerPage; row++) {
-                    wordHTML += `<tr class="grid-row">`;
-                    
-                    const hasCharacter = row < pageCharacters.length;
-                    const currentCharacter = hasCharacter ? pageCharacters[row] : '';
-                    
-                    // 生成8列
-                    for (let col = 0; col < colsPerRow; col++) {
-                        const isFirstCol = col === 0;
-                        const isEmpty = !hasCharacter || !isFirstCol;
-                        
-                        wordHTML += `<td class="grid-cell ${isEmpty ? 'empty-cell' : ''}" style="position: relative;">`;
-                        
-                        // 添加网格线
-                        wordHTML += `<div class="grid-lines">`;
-                        wordHTML += `<div class="center-vertical"></div>`;
-                        wordHTML += `<div class="center-horizontal"></div>`;
-                        if (currentSettings.gridType === 'mi') {
-                            wordHTML += `<div class="diagonal-1"></div>`;
-                            wordHTML += `<div class="diagonal-2"></div>`;
-                        }
-                        wordHTML += `</div>`;
-                        
-                        // 如果是第一个格子且有生字，显示生字
-                        if (isFirstCol && hasCharacter) {
-                            wordHTML += `<div class="character">${currentCharacter}</div>`;
-                        }
-                        
-                        wordHTML += `</td>`;
-                    }
-                    
-                    wordHTML += `</tr>`;
-                }
-                
-                wordHTML += `</table>`;
-                
                 // 添加生字列表
-                if (pageCharacters.length > 0) {
-                    wordHTML += `
-                        <div style="margin-top: 1cm; text-align: center;">
-                            <p style="color: #4a6fa5; font-weight: bold;">本页生字 (${pageCharacters.length}个):</p>
-                            <p style="font-size: 14pt; letter-spacing: 5px; line-height: 1.8;">${pageCharacters.join(' ')}</p>
-                        </div>
-                    `;
-                }
+                wordHTML += `
+                    <div style="margin-top: 1cm; text-align: center;">
+                        <p style="color: #4a6fa5; font-weight: bold;">本页生字 (${pageCharacters.length}个):</p>
+                        <p style="font-size: 14pt; letter-spacing: 5px; line-height: 1.8;">${pageCharacters.join(' ')}</p>
+                    </div>
+                `;
                 
                 // 页脚
                 wordHTML += `
@@ -1560,7 +1530,7 @@
                 `;
                 
                 wordHTML += `</div>`;
-            }
+            });
             
             wordHTML += `
                 </body>
@@ -1576,7 +1546,7 @@
             // 使用FileSaver保存文件
             saveAs(blob, fileName);
             
-            showSuccess(`Word文档下载成功！共 ${totalPages} 页，每页${rowsPerPage}个生字`);
+            showSuccess(`Word文档下载成功！共 ${pageImages.length} 页，每页${currentSettings.rowsPerPage}个生字`);
             
         } catch (error) {
             console.error('Word导出失败:', error);
