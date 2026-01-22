@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>书单分享系统</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
+    <style>
+        /* 所有样式与之前相同，这里只列出关键修改 */
+        /* ... 保持原有样式不变 ... */
+    </style>
+</head>
+<body>
+    <div class="container" id="app">
+        <!-- 导航栏 -->
+        <nav class="navbar" v-if="isAuthenticated">
+            <div class="nav-container">
+                <a href="#" @click.prevent="showHome" class="nav-link">
+                    <i class="fas fa-home"></i>主页
+                </a>
+                <a href="#" @click.prevent="showMyBooklists" class="nav-link">
+                    <i class="fas fa-book"></i>我的书单
+                </a>
+                <a href="#" @click.prevent="showProfile" class="nav-link">
+                    <i class="fas fa-user"></i>个人中心
+                </a>
+                <a href="#" @click.prevent="logout" class="nav-link">
+                    <i class="fas fa-sign-out-alt"></i>退出
+                </a>
+            </div>
+        </nav>
+
+        <!-- 登录/注册表单 -->
+        <div class="auth-container" v-if="!isAuthenticated">
+            <div class="auth-box">
+                <h2>欢迎使用书单分享系统</h2>
+                <form @submit.prevent="login" v-if="showLoginForm">
+                    <input type="text" v-model="loginData.username" placeholder="用户名/昵称/邮箱" required>
+                    <input type="password" v-model="loginData.password" placeholder="密码" required>
+                    <button type="submit" class="btn-primary">登录</button>
+                    <p class="auth-link" @click="toggleAuthForm">还没有账号？立即注册</p>
+                </form>
+                
+                <form @submit.prevent="register" v-else>
+                    <input type="text" v-model="registerData.username" placeholder="用户名" required>
+                    <input type="text" v-model="registerData.nickname" placeholder="昵称" required>
+                    <input type="email" v-model="registerData.email" placeholder="邮箱(可选)">
+                    <input type="password" v-model="registerData.password" placeholder="密码(至少6位)" required>
+                    <button type="submit" class="btn-primary">注册</button>
+                    <p class="auth-link" @click="toggleAuthForm">已有账号？立即登录</p>
+                </form>
+            </div>
+        </div>
+
+        <!-- 主内容区域 -->
+        <div class="main-content" v-else>
+            <!-- 页面头部 -->
+            <header class="booklist-header">
+                <h1>书单分享系统</h1>
+                <p>分享你的学习书单，与大家一起交流阅读心得，共同进步！</p>
+                <button @click="openCreateModal" class="create-booklist-btn">
+                    <i class="fas fa-plus-circle"></i>创建书单
+                </button>
+            </header>
+
+            <!-- 筛选和搜索区域 -->
+            <section class="filter-search-section">
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <h3><i class="fas fa-filter"></i>按科目筛选</h3>
+                        <select v-model="filters.subject" @change="filterBooklists" class="filter-select">
+                            <option value="all">全部科目</option>
+                            <option value="语文">语文</option>
+                            <option value="数学">数学</option>
+                            <option value="英语">英语</option>
+                            <option value="道法">道法</option>
+                            <option value="物理">物理</option>
+                            <option value="化学">化学</option>
+                            <option value="生物">生物</option>
+                            <option value="历史">历史</option>
+                            <option value="政治">政治</option>
+                            <option value="地理">地理</option>
+                            <option value="科学">科学</option>
+                            <option value="课外阅读">课外阅读</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <h3><i class="fas fa-calendar-alt"></i>按年月筛选</h3>
+                        <select v-model="filters.yearMonth" @change="filterBooklists" class="filter-select">
+                            <option value="all">全部时间</option>
+                            <option v-for="ym in yearMonthFilters" :value="`${ym.year}-${ym.month}`">
+                                {{ ym.year }}年{{ ym.month }}月 ({{ ym.count }})
+                            </option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="search-box">
+                    <input type="text" v-model="filters.search" @keyup.enter="filterBooklists" 
+                           placeholder="搜索书单标题、内容或标签..." class="search-input">
+                    <button @click="filterBooklists" class="search-btn">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </section>
+
+            <!-- 书单卡片网格 -->
+            <section class="booklist-grid">
+                <div v-if="loading" class="loading-state">
+                    <div class="loading-spinner"></div>
+                    <p>加载中...</p>
+                </div>
+                
+                <div v-else-if="booklists.length === 0" class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-book-open"></i>
+                    </div>
+                    <h3>暂无书单分享</h3>
+                    <p v-if="isMyBooklistsView">您还没有创建书单，点击上方"创建书单"按钮开始吧！</p>
+                    <p v-else>还没有书单分享，快来创建第一个书单吧！</p>
+                </div>
+                
+                <div v-else>
+                    <booklist-card 
+                        v-for="booklist in booklists" 
+                        :key="booklist._id"
+                        :booklist="booklist"
+                        :current-user="currentUser"
+                        @view-detail="openDetailModal"
+                        @edit="openEditModal"
+                        @delete="deleteBooklist"
+                    />
+                </div>
+                
+                <!-- 分页 -->
+                <div v-if="pagination.pages > 1" class="pagination">
+                    <button @click="changePage(pagination.page - 1)" :disabled="pagination.page <= 1">
+                        <i class="fas fa-chevron-left"></i> 上一页
+                    </button>
+                    <span>第 {{ pagination.page }} 页 / 共 {{ pagination.pages }} 页</span>
+                    <button @click="changePage(pagination.page + 1)" :disabled="pagination.page >= pagination.pages">
+                        下一页 <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </section>
+        </div>
+
+        <!-- 模态框组件 -->
+        <booklist-modal 
+            v-if="showModal"
+            :mode="modalMode"
+            :booklist="selectedBooklist"
+            @close="closeModal"
+            @save="saveBooklist"
+        />
+        
+        <booklist-detail-modal
+            v-if="showDetailModal"
+            :booklist="selectedBooklist"
+            :current-user="currentUser"
+            @close="closeDetailModal"
+            @add-comment="addComment"
+            @delete-comment="deleteComment"
+        />
+    </div>
+
+    <!-- Vue.js 和 Axios -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    
+    <script>
+        // API基础URL
+        const API_BASE_URL = 'http://localhost:3000/api';
+        
+        // 创建Vue应用
+        const app = Vue.createApp({
+            data() {
+                return {
+                    // 认证相关
+                    isAuthenticated: false,
+                    currentUser: null,
+                    showLoginForm: true,
+                    
+                    // 登录数据
+                    loginData: {
+                        username: '',
+                        password: ''
+                    },
+                    
+                    // 注册数据
+                    registerData: {
+                        username: '',
+                        nickname: '',
+                        email: '',
+                        password: ''
+                    },
+                    
+                    // 书单数据
+                    booklists: [],
+                    loading: false,
+                    
+                    // 筛选器
+                    filters: {
+                        subject: 'all',
+                        yearMonth: 'all',
+                        search: ''
+                    },
+                    
+                    // 分页
+                    pagination: {
+                        page: 1,
+                        limit: 12,
+                        total: 0,
+                        pages: 1
+                    },
+                    
+                    // 年月筛选选项
+                    yearMonthFilters: [],
+                    
+                    // 模态框
+                    showModal: false,
+                    showDetailModal: false,
+                    modalMode: 'create', // 'create' 或 'edit'
+                    selectedBooklist: null,
+                    
+                    // 视图模式
+                    isMyBooklistsView: false
+                };
+            },
+            
+            mounted() {
+                this.checkAuth();
+                this.setupAxiosInterceptors();
+            },
+            
+            methods: {
+                // 认证相关方法
+                async checkAuth() {
+                    const token = localStorage.getItem('token');
+                    if (token) {
+                        try {
+                            const response = await axios.get(`${API_BASE_URL}/auth/profile`, {
+                                headers: { Authorization: `Bearer ${token}` }
+                            });
+                            
+                            if (response.data.success) {
+                                this.isAuthenticated = true;
+                                this.currentUser = response.data.data.user;
+                                this.loadBooklists();
+                                this.loadYearMonthFilters();
+                            }
+                        } catch (error) {
+                            localStorage.removeItem('token');
+                        }
+                    }
+                },
+                
+                setupAxiosInterceptors() {
+                    axios.interceptors.request.use(config => {
+                        const token = localStorage.getItem('token');
+                        if (token) {
+                            config.headers.Authorization = `Bearer ${token}`;
+                        }
+                        return config;
+                    });
+                    
+                    axios.interceptors.response.use(
+                        response => response,
+                        error => {
+                            if (error.response?.status === 401) {
+                                this.logout();
+                            }
+                            return Promise.reject(error);
+                        }
+                    );
+                },
+                
+                async login() {
+                    try {
+                        const response = await axios.post(`${API_BASE_URL}/auth/login`, this.loginData);
+                        
+                        if (response.data.success) {
+                            const { token, user } = response.data.data;
+                            localStorage.setItem('token', token);
+                            this.isAuthenticated = true;
+                            this.currentUser = user;
+                            this.loginData = { username: '', password: '' };
+                            this.loadBooklists();
+                            this.loadYearMonthFilters();
+                        }
+                    } catch (error) {
+                        alert(error.response?.data?.message || '登录失败');
+                    }
+                },
+                
+                async register() {
+                    try {
+                        const response = await axios.post(`${API_BASE_URL}/auth/register`, this.registerData);
+                        
+                        if (response.data.success) {
+                            alert('注册成功！请登录');
+                            this.showLoginForm = true;
+                            this.registerData = { username: '', nickname: '', email: '', password: '' };
+                        }
+                    } catch (error) {
+                        alert(error.response?.data?.message || '注册失败');
+                    }
+                },
+                
+                logout() {
+                    localStorage.removeItem('token');
+                    this.isAuthenticated = false;
+                    this.currentUser = null;
+                    this.booklists = [];
+                    this.showLoginForm = true;
+                },
+                
+                toggleAuthForm() {
+                    this.showLoginForm = !this.showLoginForm;
+                },
+                
+                // 书单相关方法
+                async loadBooklists() {
+                    this.loading = true;
+                    try {
+                        const params = {
+                            page: this.pagination.page,
+                            limit: this.pagination.limit
+                        };
+                        
+                        if (this.filters.subject !== 'all') {
+                            params.subject = this.filters.subject;
+                        }
+                        
+                        if (this.filters.yearMonth !== 'all') {
+                            const [year, month] = this.filters.yearMonth.split('-');
+                            params.year = year;
+                            params.month = month;
+                        }
+                        
+                        if (this.filters.search) {
+                            params.search = this.filters.search;
+                        }
+                        
+                        let url = `${API_BASE_URL}/booklists`;
+                        if (this.isMyBooklistsView) {
+                            url = `${API_BASE_URL}/booklists/user/${this.currentUser.id}`;
+                        }
+                        
+                        const response = await axios.get(url, { params });
+                        
+                        if (response.data.success) {
+                            this.booklists = response.data.data.booklists;
+                            this.pagination = response.data.data.pagination;
+                        }
+                    } catch (error) {
+                        console.error('加载书单失败:', error);
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+                
+                async loadYearMonthFilters() {
+                    try {
+                        const response = await axios.get(`${API_BASE_URL}/booklists`);
+                        if (response.data.success) {
+                            this.yearMonthFilters = response.data.data.filters?.yearMonths || [];
+                        }
+                    } catch (error) {
+                        console.error('加载年月筛选器失败:', error);
+                    }
+                },
+                
+                filterBooklists() {
+                    this.pagination.page = 1;
+                    this.loadBooklists();
+                },
+                
+                changePage(page) {
+                    this.pagination.page = page;
+                    this.loadBooklists();
+                    window.scrollTo(0, 0);
+                },
+                
+                // 视图切换
+                showHome() {
+                    this.isMyBooklistsView = false;
+                    this.filters = { subject: 'all', yearMonth: 'all', search: '' };
+                    this.loadBooklists();
+                },
+                
+                showMyBooklists() {
+                    this.isMyBooklistsView = true;
+                    this.loadBooklists();
+                },
+                
+                showProfile() {
+                    alert('个人中心功能开发中...');
+                },
+                
+                // 模态框相关
+                openCreateModal() {
+                    this.modalMode = 'create';
+                    this.selectedBooklist = null;
+                    this.showModal = true;
+                },
+                
+                openEditModal(booklist) {
+                    this.modalMode = 'edit';
+                    this.selectedBooklist = { ...booklist };
+                    this.showModal = true;
+                },
+                
+                openDetailModal(booklist) {
+                    this.selectedBooklist = booklist;
+                    this.showDetailModal = true;
+                },
+                
+                closeModal() {
+                    this.showModal = false;
+                    this.selectedBooklist = null;
+                },
+                
+                closeDetailModal() {
+                    this.showDetailModal = false;
+                    this.selectedBooklist = null;
+                },
+                
+                // 书单操作
+                async saveBooklist(booklistData) {
+                    try {
+                        let response;
+                        
+                        if (this.modalMode === 'create') {
+                            response = await axios.post(`${API_BASE_URL}/booklists`, booklistData);
+                        } else {
+                            response = await axios.put(
+                                `${API_BASE_URL}/booklists/${this.selectedBooklist._id}`, 
+                                booklistData
+                            );
+                        }
+                        
+                        if (response.data.success) {
+                            this.closeModal();
+                            this.loadBooklists();
+                            this.loadYearMonthFilters();
+                        }
+                    } catch (error) {
+                        alert(error.response?.data?.message || '保存失败');
+                    }
+                },
+                
+                async deleteBooklist(booklistId) {
+                    if (confirm('确定要删除这个书单吗？此操作无法撤销。')) {
+                        try {
+                            const response = await axios.delete(`${API_BASE_URL}/booklists/${booklistId}`);
+                            
+                            if (response.data.success) {
+                                this.loadBooklists();
+                                this.loadYearMonthFilters();
+                            }
+                        } catch (error) {
+                            alert(error.response?.data?.message || '删除失败');
+                        }
+                    }
+                },
+                
+                // 评论操作
+                async addComment(booklistId, content) {
+                    try {
+                        const response = await axios.post(
+                            `${API_BASE_URL}/comments/booklist/${booklistId}`,
+                            { content }
+                        );
+                        
+                        if (response.data.success) {
+                            // 重新加载书单详情
+                            const booklistResponse = await axios.get(`${API_BASE_URL}/booklists/${booklistId}`);
+                            if (booklistResponse.data.success) {
+                                this.selectedBooklist = booklistResponse.data.data.booklist;
+                            }
+                        }
+                    } catch (error) {
+                        alert(error.response?.data?.message || '发表评论失败');
+                    }
+                },
+                
+                async deleteComment(commentId) {
+                    if (confirm('确定要删除这条评论吗？')) {
+                        try {
+                            const response = await axios.delete(`${API_BASE_URL}/comments/${commentId}`);
+                            
+                            if (response.data.success) {
+                                // 重新加载书单详情
+                                const booklistId = this.selectedBooklist._id;
+                                const booklistResponse = await axios.get(`${API_BASE_URL}/booklists/${booklistId}`);
+                                if (booklistResponse.data.success) {
+                                    this.selectedBooklist = booklistResponse.data.data.booklist;
+                                }
+                            }
+                        } catch (error) {
+                            alert(error.response?.data?.message || '删除评论失败');
+                        }
+                    }
+                }
+            }
+        });
+
+        // 书单卡片组件
+        app.component('booklist-card', {
+            props: ['booklist', 'currentUser'],
+            template: `
+                <div class="booklist-card" @click="$emit('view-detail', booklist)">
+                    <div class="booklist-bg" :style="{ background: booklist.bgColor || '#4a90e2' }">
+                        <div class="booklist-category">
+                            <i class="fas fa-tag"></i>{{ booklist.subject }}
+                        </div>
+                        <div class="booklist-actions" v-if="booklist.creator._id === currentUser?.id">
+                            <button class="action-btn edit-btn" @click.stop="$emit('edit', booklist)">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="action-btn delete-btn" @click.stop="$emit('delete', booklist._id)">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="booklist-content">
+                        <div class="booklist-meta">
+                            <div class="booklist-creator">
+                                <i class="fas fa-user-circle"></i>{{ booklist.creator.nickname }}
+                            </div>
+                            <div class="booklist-date">
+                                {{ booklist.year }}年{{ booklist.month }}月
+                            </div>
+                        </div>
+                        
+                        <h3 class="booklist-title">{{ booklist.title }}</h3>
+                        
+                        <div class="booklist-desc">
+                            {{ booklist.content.substring(0, 100) }}...
+                        </div>
+                        
+                        <div class="booklist-stats">
+                            <div class="booklist-comments">
+                                <i class="fas fa-comment"></i>{{ booklist.commentCount || 0 }} 条评论
+                            </div>
+                            <div class="booklist-views">
+                                <i class="fas fa-eye"></i>{{ booklist.viewCount || 0 }} 次浏览
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `
+        });
+
+        // 书单模态框组件
+        app.component('booklist-modal', {
+            props: ['mode', 'booklist'],
+            emits: ['close', 'save'],
+            data() {
+                return {
+                    formData: {
+                        title: '',
+                        content: '',
+                        subject: '',
+                        year: new Date().getFullYear(),
+                        month: new Date().getMonth() + 1,
+                        bgIndex: 0
+                    },
+                    bgColors: [
+                        '#4a90e2', '#50c878', '#ff7f50', '#9370db', '#ff6b6b',
+                        'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                        'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+                        'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+                        'linear-gradient(135deg, #fa709a 0%, #fee140 100%)'
+                    ]
+                };
+            },
+            mounted() {
+                if (this.mode === 'edit' && this.booklist) {
+                    this.formData = { ...this.booklist };
+                } else {
+                    // 设置当前年份和月份
+                    this.formData.year = new Date().getFullYear();
+                    this.formData.month = new Date().getMonth() + 1;
+                }
+            },
+            methods: {
+                save() {
+                    this.$emit('save', this.formData);
+                },
+                close() {
+                    this.$emit('close');
+                }
+            },
+            template: `
+                <div class="modal-overlay">
+                    <div class="modal">
+                        <div class="modal-header">
+                            <h2>{{ mode === 'create' ? '创建书单' : '编辑书单' }}</h2>
+                            <button class="modal-close" @click="close">&times;</button>
+                        </div>
+                        
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label class="form-label">标题 *</label>
+                                <input type="text" v-model="formData.title" class="form-input" placeholder="请输入书单标题" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">科目 *</label>
+                                <select v-model="formData.subject" class="form-select" required>
+                                    <option value="">请选择科目</option>
+                                    <option value="语文">语文</option>
+                                    <option value="数学">数学</option>
+                                    <option value="英语">英语</option>
+                                    <option value="道法">道法</option>
+                                    <option value="物理">物理</option>
+                                    <option value="化学">化学</option>
+                                    <option value="生物">生物</option>
+                                    <option value="历史">历史</option>
+                                    <option value="政治">政治</option>
+                                    <option value="地理">地理</option>
+                                    <option value="科学">科学</option>
+                                    <option value="课外阅读">课外阅读</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">年份 *</label>
+                                    <select v-model="formData.year" class="form-select" required>
+                                        <option v-for="year in [2020, 2021, 2022, 2023, 2024, 2025]" 
+                                                :value="year">{{ year }}年</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label">月份 *</label>
+                                    <select v-model="formData.month" class="form-select" required>
+                                        <option v-for="month in [1,2,3,4,5,6,7,8,9,10,11,12]" 
+                                                :value="month">{{ month }}月</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">选择背景</label>
+                                <div class="bg-selector">
+                                    <div v-for="(color, index) in bgColors" 
+                                         :key="index"
+                                         class="bg-option"
+                                         :class="{ selected: formData.bgIndex === index }"
+                                         :style="{ background: color }"
+                                         @click="formData.bgIndex = index">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">内容 *</label>
+                                <textarea v-model="formData.content" class="form-textarea" 
+                                          placeholder="请输入书单内容..." required rows="6"></textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" @click="close">取消</button>
+                            <button type="button" class="btn btn-primary" @click="save">
+                                <i class="fas fa-save"></i>保存
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `
+        });
+
+        // 书单详情模态框组件
+        app.component('booklist-detail-modal', {
+            props: ['booklist', 'currentUser'],
+            emits: ['close', 'add-comment', 'delete-comment'],
+            data() {
+                return {
+                    newComment: ''
+                };
+            },
+            methods: {
+                addComment() {
+                    if (this.newComment.trim()) {
+                        this.$emit('add-comment', this.booklist._id, this.newComment);
+                        this.newComment = '';
+                    }
+                },
+                deleteComment(commentId) {
+                    this.$emit('delete-comment', commentId);
+                },
+                close() {
+                    this.$emit('close');
+                }
+            },
+            template: `
+                <div class="modal-overlay detail-modal">
+                    <div class="modal">
+                        <div class="modal-header booklist-detail-header" 
+                             :style="{ background: booklist.bgColor || '#4a90e2' }">
+                            <div class="detail-category">{{ booklist.subject }}</div>
+                            <h2 class="detail-title">{{ booklist.title }}</h2>
+                            <div class="detail-meta">
+                                <div class="detail-creator">
+                                    <i class="fas fa-user"></i>
+                                    <span>{{ booklist.creator.nickname }}</span>
+                                </div>
+                                <div class="detail-date">{{ booklist.year }}年{{ booklist.month }}月</div>
+                            </div>
+                        </div>
+                        
+                        <div class="booklist-detail-content">
+                            <div class="detail-desc">{{ booklist.content }}</div>
+                            
+                            <div class="comments-section">
+                                <h3><i class="fas fa-comments"></i>评论 ({{ booklist.comments?.length || 0 }})</h3>
+                                
+                                <div class="comment-form">
+                                    <textarea v-model="newComment" class="comment-input" 
+                                              placeholder="写下您的评论..."></textarea>
+                                    <button @click="addComment" class="btn btn-primary">
+                                        <i class="fas fa-paper-plane"></i>发表评论
+                                    </button>
+                                </div>
+                                
+                                <div class="comments-list">
+                                    <div v-if="!booklist.comments?.length" class="no-comments">
+                                        <i class="fas fa-comment-slash"></i>
+                                        <p>暂无评论，快来发表第一条评论吧！</p>
+                                    </div>
+                                    
+                                    <div v-else class="comment-item" v-for="comment in booklist.comments" :key="comment._id">
+                                        <div class="comment-header">
+                                            <div class="comment-user">
+                                                <i class="fas fa-user-circle"></i>{{ comment.user?.nickname }}
+                                            </div>
+                                            <div class="comment-time">
+                                                {{ new Date(comment.createdAt).toLocaleString() }}
+                                            </div>
+                                        </div>
+                                        <div class="comment-content">{{ comment.content }}</div>
+                                        <div class="comment-actions" v-if="comment.user?._id === currentUser?.id">
+                                            <button class="reply-btn" @click="deleteComment(comment._id)">
+                                                <i class="fas fa-trash"></i>删除
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" @click="close">关闭</button>
+                        </div>
+                    </div>
+                </div>
+            `
+        });
+
+        // 挂载应用
+        app.mount('#app');
+    </script>
+</body>
+</html>
