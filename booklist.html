@@ -1051,7 +1051,7 @@
             '9': '9月', '10': '10月', '11': '11月', '12': '12月'
         };
         
-        // DOM元素
+        // DOM元素引用
         let createBooklistBtn, booklistModal, detailModal, closeModalBtn, cancelBtn;
         let saveBooklistBtn, booklistForm, booklistGrid, emptyState, bgSelector;
         let subjectFilter, monthFilter, searchInput, searchBtn, closeDetailBtn;
@@ -1059,25 +1059,52 @@
         
         // 初始化页面
         document.addEventListener('DOMContentLoaded', function() {
-            // 初始化DOM元素引用
-            initDOMElements();
-            initPage();
-            renderBooklists();
-            setupEventListeners();
+            console.log('DOM加载完成，开始初始化页面...');
             
-            // 检查是否有当前用户
-            if (currentUser) {
-                const nicknameInput = document.getElementById('nickname');
-                if (nicknameInput) {
-                    nicknameInput.value = currentUser;
+            try {
+                // 初始化DOM元素引用
+                initDOMElements();
+                
+                // 检查DOM元素是否成功获取
+                if (!bgSelector) {
+                    console.error('bgSelector元素未找到！');
+                    // 尝试重新获取
+                    bgSelector = document.getElementById('bgSelector');
+                    if (!bgSelector) {
+                        console.error('重新获取bgSelector仍然失败');
+                        return;
+                    }
                 }
+                
+                console.log('DOM元素初始化完成，开始设置页面...');
+                
+                // 初始化页面
+                initPage();
+                
+                // 渲染书单列表
+                renderBooklists();
+                
+                // 设置事件监听器
+                setupEventListeners();
+                
+                // 检查是否有当前用户
+                if (currentUser) {
+                    const nicknameInput = document.getElementById('nickname');
+                    if (nicknameInput) {
+                        nicknameInput.value = currentUser;
+                    }
+                }
+                
+                console.log('页面初始化完成，当前书单数量:', booklists.length);
+            } catch (error) {
+                console.error('初始化页面时发生错误:', error);
             }
-            
-            console.log('页面加载完成，当前书单数量:', booklists.length);
         });
         
         // 初始化DOM元素引用
         function initDOMElements() {
+            console.log('开始初始化DOM元素...');
+            
             createBooklistBtn = document.getElementById('createBooklistBtn');
             booklistModal = document.getElementById('booklistModal');
             detailModal = document.getElementById('detailModal');
@@ -1097,28 +1124,56 @@
             submitCommentBtn = document.getElementById('submitCommentBtn');
             commentsList = document.getElementById('commentsList');
             noComments = document.getElementById('noComments');
+            
+            console.log('DOM元素初始化完成:', {
+                createBooklistBtn: !!createBooklistBtn,
+                bgSelector: !!bgSelector,
+                booklistForm: !!booklistForm
+            });
         }
         
         // 初始化页面
         function initPage() {
-            // 生成背景选择器
-            bgColors.forEach((color, index) => {
-                const bgOption = document.createElement('div');
-                bgOption.className = 'bg-option';
-                bgOption.style.background = color;
-                bgOption.dataset.index = index;
-                bgOption.addEventListener('click', function() {
-                    document.querySelectorAll('.bg-option').forEach(opt => {
-                        opt.classList.remove('selected');
-                    });
-                    this.classList.add('selected');
-                });
-                bgSelector.appendChild(bgOption);
-            });
+            console.log('开始初始化页面，bgSelector:', bgSelector);
             
-            // 默认选中第一个背景
-            if (bgSelector.firstChild) {
-                bgSelector.firstChild.classList.add('selected');
+            try {
+                // 确保bgSelector存在
+                if (!bgSelector) {
+                    console.error('bgSelector在initPage中不存在');
+                    bgSelector = document.getElementById('bgSelector');
+                    if (!bgSelector) {
+                        console.error('仍然无法找到bgSelector');
+                        return;
+                    }
+                }
+                
+                // 清空现有内容（如果有）
+                bgSelector.innerHTML = '';
+                
+                // 生成背景选择器
+                bgColors.forEach((color, index) => {
+                    const bgOption = document.createElement('div');
+                    bgOption.className = 'bg-option';
+                    bgOption.style.background = color;
+                    bgOption.dataset.index = index;
+                    bgOption.addEventListener('click', function() {
+                        document.querySelectorAll('.bg-option').forEach(opt => {
+                            opt.classList.remove('selected');
+                        });
+                        this.classList.add('selected');
+                    });
+                    bgSelector.appendChild(bgOption);
+                });
+                
+                // 默认选中第一个背景
+                if (bgSelector.firstChild) {
+                    bgSelector.firstChild.classList.add('selected');
+                    console.log('默认选中第一个背景');
+                }
+                
+                console.log('页面初始化完成');
+            } catch (error) {
+                console.error('初始化页面时发生错误:', error);
             }
         }
         
@@ -1126,171 +1181,189 @@
         function setupEventListeners() {
             console.log('开始设置事件监听器...');
             
-            // 创建书单按钮
-            if (createBooklistBtn) {
-                console.log('找到创建书单按钮');
-                createBooklistBtn.addEventListener('click', function(e) {
-                    console.log('创建书单按钮被点击了！');
-                    e.preventDefault();
-                    e.stopPropagation();
-                    openCreateModal();
-                });
-            } else {
-                console.error('未找到创建书单按钮！');
-            }
-            
-            // 关闭模态框按钮
-            if (closeModalBtn) {
-                closeModalBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    closeModal();
-                });
-            }
-            
-            if (cancelBtn) {
-                cancelBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    closeModal();
-                });
-            }
-            
-            if (closeDetailBtn) {
-                closeDetailBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    closeDetailModal();
-                });
-            }
-            
-            // 保存书单按钮
-            if (saveBooklistBtn) {
-                saveBooklistBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    saveBooklist();
-                });
-            }
-            
-            // 筛选和搜索
-            if (subjectFilter) subjectFilter.addEventListener('change', filterBooklists);
-            if (monthFilter) monthFilter.addEventListener('change', filterBooklists);
-            if (searchBtn) searchBtn.addEventListener('click', searchBooklists);
-            if (searchInput) {
-                searchInput.addEventListener('keyup', function(e) {
-                    if (e.key === 'Enter') {
-                        searchBooklists();
-                    }
-                });
-            }
-            
-            // 提交评论
-            if (submitCommentBtn) {
-                submitCommentBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    submitComment();
-                });
-            }
-            
-            // 点击模态框外部关闭
-            if (booklistModal) {
-                booklistModal.addEventListener('click', function(e) {
-                    if (e.target === booklistModal) {
+            try {
+                // 创建书单按钮
+                if (createBooklistBtn) {
+                    console.log('找到创建书单按钮');
+                    createBooklistBtn.addEventListener('click', function(e) {
+                        console.log('创建书单按钮被点击了！');
+                        e.preventDefault();
+                        e.stopPropagation();
+                        openCreateModal();
+                    });
+                } else {
+                    console.error('未找到创建书单按钮！');
+                }
+                
+                // 关闭模态框按钮
+                if (closeModalBtn) {
+                    closeModalBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
                         closeModal();
-                    }
-                });
-            }
-            
-            if (detailModal) {
-                detailModal.addEventListener('click', function(e) {
-                    if (e.target === detailModal) {
+                    });
+                }
+                
+                if (cancelBtn) {
+                    cancelBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        closeModal();
+                    });
+                }
+                
+                if (closeDetailBtn) {
+                    closeDetailBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
                         closeDetailModal();
-                    }
-                });
+                    });
+                }
+                
+                // 保存书单按钮
+                if (saveBooklistBtn) {
+                    saveBooklistBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        saveBooklist();
+                    });
+                }
+                
+                // 筛选和搜索
+                if (subjectFilter) subjectFilter.addEventListener('change', filterBooklists);
+                if (monthFilter) monthFilter.addEventListener('change', filterBooklists);
+                if (searchBtn) searchBtn.addEventListener('click', searchBooklists);
+                if (searchInput) {
+                    searchInput.addEventListener('keyup', function(e) {
+                        if (e.key === 'Enter') {
+                            searchBooklists();
+                        }
+                    });
+                }
+                
+                // 提交评论
+                if (submitCommentBtn) {
+                    submitCommentBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        submitComment();
+                    });
+                }
+                
+                // 点击模态框外部关闭
+                if (booklistModal) {
+                    booklistModal.addEventListener('click', function(e) {
+                        if (e.target === booklistModal) {
+                            closeModal();
+                        }
+                    });
+                }
+                
+                if (detailModal) {
+                    detailModal.addEventListener('click', function(e) {
+                        if (e.target === detailModal) {
+                            closeDetailModal();
+                        }
+                    });
+                }
+                
+                // 表单提交
+                if (booklistForm) {
+                    booklistForm.addEventListener('submit', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        saveBooklist();
+                    });
+                }
+                
+                console.log('事件监听器设置完成');
+            } catch (error) {
+                console.error('设置事件监听器时发生错误:', error);
             }
-            
-            // 表单提交
-            if (booklistForm) {
-                booklistForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    saveBooklist();
-                });
-            }
-            
-            console.log('事件监听器设置完成');
         }
         
         // 打开创建书单模态框
         function openCreateModal() {
             console.log('打开创建书单模态框函数被调用');
-            document.getElementById('modalTitle').textContent = '创建书单';
-            booklistForm.reset();
-            document.getElementById('booklistId').value = '';
-            editingBooklistId = null;
             
-            // 重置背景选择
-            document.querySelectorAll('.bg-option').forEach(opt => {
-                opt.classList.remove('selected');
-            });
-            if (bgSelector.firstChild) {
-                bgSelector.firstChild.classList.add('selected');
+            try {
+                document.getElementById('modalTitle').textContent = '创建书单';
+                booklistForm.reset();
+                document.getElementById('booklistId').value = '';
+                editingBooklistId = null;
+                
+                // 重置背景选择
+                const bgOptions = document.querySelectorAll('.bg-option');
+                bgOptions.forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+                if (bgOptions.length > 0) {
+                    bgOptions[0].classList.add('selected');
+                }
+                
+                // 设置当前用户
+                if (currentUser) {
+                    document.getElementById('nickname').value = currentUser;
+                }
+                
+                // 重置月份选择
+                document.getElementById('month').selectedIndex = 0;
+                
+                booklistModal.style.display = 'flex';
+                console.log('模态框已显示');
+            } catch (error) {
+                console.error('打开创建模态框时发生错误:', error);
             }
-            
-            // 设置当前用户
-            if (currentUser) {
-                document.getElementById('nickname').value = currentUser;
-            }
-            
-            // 重置月份选择
-            document.getElementById('month').selectedIndex = 0;
-            
-            booklistModal.style.display = 'flex';
-            console.log('模态框已显示');
         }
         
         // 打开编辑书单模态框
         function openEditModal(booklist) {
-            document.getElementById('modalTitle').textContent = '编辑书单';
-            document.getElementById('nickname').value = booklist.creator;
-            document.getElementById('title').value = booklist.title;
-            document.getElementById('subject').value = booklist.subject;
-            document.getElementById('month').value = booklist.month || '1';
-            document.getElementById('content').value = booklist.content;
-            document.getElementById('booklistId').value = booklist.id;
-            editingBooklistId = booklist.id;
-            
-            // 设置背景选择
-            document.querySelectorAll('.bg-option').forEach((opt, index) => {
-                opt.classList.remove('selected');
-                if (index === booklist.bgIndex) {
-                    opt.classList.add('selected');
-                }
-            });
-            
-            booklistModal.style.display = 'flex';
+            try {
+                document.getElementById('modalTitle').textContent = '编辑书单';
+                document.getElementById('nickname').value = booklist.creator;
+                document.getElementById('title').value = booklist.title;
+                document.getElementById('subject').value = booklist.subject;
+                document.getElementById('month').value = booklist.month || '1';
+                document.getElementById('content').value = booklist.content;
+                document.getElementById('booklistId').value = booklist.id;
+                editingBooklistId = booklist.id;
+                
+                // 设置背景选择
+                document.querySelectorAll('.bg-option').forEach((opt, index) => {
+                    opt.classList.remove('selected');
+                    if (index === booklist.bgIndex) {
+                        opt.classList.add('selected');
+                    }
+                });
+                
+                booklistModal.style.display = 'flex';
+            } catch (error) {
+                console.error('打开编辑模态框时发生错误:', error);
+            }
         }
         
         // 打开书单详情模态框
         function openDetailModal(booklist) {
-            currentDetailBooklistId = booklist.id;
-            
-            // 设置详情头部
-            const detailHeader = document.getElementById('detailHeader');
-            detailHeader.style.background = bgColors[booklist.bgIndex];
-            
-            document.getElementById('detailCategory').textContent = booklist.subject;
-            document.getElementById('detailTitle').textContent = booklist.title;
-            document.getElementById('detailCreator').textContent = booklist.creator;
-            document.getElementById('detailMonth').textContent = monthNames[booklist.month] || '1月';
-            document.getElementById('detailContent').textContent = booklist.content;
-            
-            // 加载评论
-            loadComments(booklist.id);
-            
-            detailModal.style.display = 'flex';
+            try {
+                currentDetailBooklistId = booklist.id;
+                
+                // 设置详情头部
+                const detailHeader = document.getElementById('detailHeader');
+                detailHeader.style.background = bgColors[booklist.bgIndex];
+                
+                document.getElementById('detailCategory').textContent = booklist.subject;
+                document.getElementById('detailTitle').textContent = booklist.title;
+                document.getElementById('detailCreator').textContent = booklist.creator;
+                document.getElementById('detailMonth').textContent = monthNames[booklist.month] || '1月';
+                document.getElementById('detailContent').textContent = booklist.content;
+                
+                // 加载评论
+                loadComments(booklist.id);
+                
+                detailModal.style.display = 'flex';
+            } catch (error) {
+                console.error('打开详情模态框时发生错误:', error);
+            }
         }
         
         // 关闭创建/编辑模态框
@@ -1308,138 +1381,155 @@
         function saveBooklist() {
             console.log('保存书单函数被调用');
             
-            const nickname = document.getElementById('nickname').value.trim();
-            const title = document.getElementById('title').value.trim();
-            const subject = document.getElementById('subject').value;
-            const month = document.getElementById('month').value;
-            const content = document.getElementById('content').value.trim();
-            const booklistId = document.getElementById('booklistId').value;
-            const selectedBg = document.querySelector('.bg-option.selected');
-            const bgIndex = selectedBg ? parseInt(selectedBg.dataset.index) : 0;
-            
-            console.log('表单数据:', { nickname, title, subject, month, content });
-            
-            // 验证输入
-            if (!nickname || !title || !subject || !month || !content) {
-                alert('请填写所有必填字段！');
-                return;
-            }
-            
-            // 保存当前用户
-            localStorage.setItem('currentUser', nickname);
-            currentUser = nickname;
-            
-            if (editingBooklistId) {
-                // 更新现有书单
-                const index = booklists.findIndex(b => b.id === editingBooklistId);
-                if (index !== -1) {
-                    booklists[index] = {
-                        ...booklists[index],
+            try {
+                const nickname = document.getElementById('nickname').value.trim();
+                const title = document.getElementById('title').value.trim();
+                const subject = document.getElementById('subject').value;
+                const month = document.getElementById('month').value;
+                const content = document.getElementById('content').value.trim();
+                const booklistId = document.getElementById('booklistId').value;
+                const selectedBg = document.querySelector('.bg-option.selected');
+                const bgIndex = selectedBg ? parseInt(selectedBg.dataset.index) : 0;
+                
+                console.log('表单数据:', { nickname, title, subject, month, content });
+                
+                // 验证输入
+                if (!nickname || !title || !subject || !month || !content) {
+                    alert('请填写所有必填字段！');
+                    return;
+                }
+                
+                // 保存当前用户
+                localStorage.setItem('currentUser', nickname);
+                currentUser = nickname;
+                
+                if (editingBooklistId) {
+                    // 更新现有书单
+                    const index = booklists.findIndex(b => b.id === editingBooklistId);
+                    if (index !== -1) {
+                        booklists[index] = {
+                            ...booklists[index],
+                            creator: nickname,
+                            title,
+                            subject,
+                            month,
+                            content,
+                            bgIndex,
+                            updatedAt: new Date().toISOString()
+                        };
+                        console.log('更新书单:', booklists[index]);
+                    }
+                } else {
+                    // 创建新书单
+                    const newBooklist = {
+                        id: Date.now().toString(),
                         creator: nickname,
                         title,
                         subject,
-                        month,
+                        month, // 保存用户选择的月份
                         content,
                         bgIndex,
-                        updatedAt: new Date().toISOString()
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString(),
+                        comments: []
                     };
-                    console.log('更新书单:', booklists[index]);
+                    
+                    console.log('创建新书单:', newBooklist);
+                    booklists.unshift(newBooklist);
                 }
-            } else {
-                // 创建新书单
-                const newBooklist = {
-                    id: Date.now().toString(),
-                    creator: nickname,
-                    title,
-                    subject,
-                    month, // 保存用户选择的月份
-                    content,
-                    bgIndex,
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString(),
-                    comments: []
-                };
                 
-                console.log('创建新书单:', newBooklist);
-                booklists.unshift(newBooklist);
+                // 保存到本地存储
+                localStorage.setItem('booklists', JSON.stringify(booklists));
+                
+                // 重新渲染书单列表
+                renderBooklists();
+                
+                // 关闭模态框
+                closeModal();
+                
+                // 显示成功消息
+                alert(editingBooklistId ? '书单更新成功！' : '书单创建成功！');
+            } catch (error) {
+                console.error('保存书单时发生错误:', error);
+                alert('保存书单时发生错误，请重试！');
             }
-            
-            // 保存到本地存储
-            localStorage.setItem('booklists', JSON.stringify(booklists));
-            
-            // 重新渲染书单列表
-            renderBooklists();
-            
-            // 关闭模态框
-            closeModal();
-            
-            // 显示成功消息
-            alert(editingBooklistId ? '书单更新成功！' : '书单创建成功！');
         }
         
         // 删除书单
         function deleteBooklist(booklistId) {
             if (confirm('确定要删除这个书单吗？此操作无法撤销。')) {
-                booklists = booklists.filter(b => b.id !== booklistId);
-                localStorage.setItem('booklists', JSON.stringify(booklists));
-                renderBooklists();
+                try {
+                    booklists = booklists.filter(b => b.id !== booklistId);
+                    localStorage.setItem('booklists', JSON.stringify(booklists));
+                    renderBooklists();
+                } catch (error) {
+                    console.error('删除书单时发生错误:', error);
+                }
             }
         }
         
         // 提交评论
         function submitComment() {
-            const commentText = commentInput.value.trim();
-            if (!commentText) {
-                alert('请输入评论内容！');
-                return;
+            try {
+                const commentText = commentInput.value.trim();
+                if (!commentText) {
+                    alert('请输入评论内容！');
+                    return;
+                }
+                
+                const booklistIndex = booklists.findIndex(b => b.id === currentDetailBooklistId);
+                if (booklistIndex === -1) return;
+                
+                const newComment = {
+                    id: Date.now().toString(),
+                    user: currentUser || '匿名用户',
+                    content: commentText,
+                    createdAt: new Date().toISOString(),
+                    replies: []
+                };
+                
+                if (!booklists[booklistIndex].comments) {
+                    booklists[booklistIndex].comments = [];
+                }
+                
+                booklists[booklistIndex].comments.push(newComment);
+                localStorage.setItem('booklists', JSON.stringify(booklists));
+                
+                // 重新加载评论
+                loadComments(currentDetailBooklistId);
+                
+                // 清空评论输入框
+                commentInput.value = '';
+            } catch (error) {
+                console.error('提交评论时发生错误:', error);
             }
-            
-            const booklistIndex = booklists.findIndex(b => b.id === currentDetailBooklistId);
-            if (booklistIndex === -1) return;
-            
-            const newComment = {
-                id: Date.now().toString(),
-                user: currentUser || '匿名用户',
-                content: commentText,
-                createdAt: new Date().toISOString(),
-                replies: []
-            };
-            
-            if (!booklists[booklistIndex].comments) {
-                booklists[booklistIndex].comments = [];
-            }
-            
-            booklists[booklistIndex].comments.push(newComment);
-            localStorage.setItem('booklists', JSON.stringify(booklists));
-            
-            // 重新加载评论
-            loadComments(currentDetailBooklistId);
-            
-            // 清空评论输入框
-            commentInput.value = '';
         }
         
         // 加载评论
         function loadComments(booklistId) {
-            const booklist = booklists.find(b => b.id === booklistId);
-            if (!booklist) return;
-            
-            const comments = booklist.comments || [];
-            
-            if (comments.length === 0) {
-                noComments.style.display = 'block';
+            try {
+                const booklist = booklists.find(b => b.id === booklistId);
+                if (!booklist) return;
+                
+                const comments = booklist.comments || [];
+                
+                if (comments.length === 0) {
+                    noComments.style.display = 'block';
+                    commentsList.innerHTML = '';
+                    commentsList.appendChild(noComments);
+                    return;
+                }
+                
+                noComments.style.display = 'none';
                 commentsList.innerHTML = '';
-                commentsList.appendChild(noComments);
-                return;
+                
+                comments.forEach(comment => {
+                    const commentItem = createCommentElement(comment);
+                    commentsList.appendChild(commentItem);
+                });
+            } catch (error) {
+                console.error('加载评论时发生错误:', error);
             }
-            
-            noComments.style.display = 'none';
-            commentsList.innerHTML = '';
-            
-            comments.forEach(comment => {
-                const commentItem = createCommentElement(comment);
-                commentsList.appendChild(commentItem);
-            });
         }
         
         // 创建评论元素
@@ -1474,24 +1564,28 @@
         
         // 渲染书单列表
         function renderBooklists(filteredBooklists = null) {
-            const displayBooklists = filteredBooklists || booklists;
-            
-            console.log('渲染书单列表，数量:', displayBooklists.length);
-            
-            if (displayBooklists.length === 0) {
-                emptyState.style.display = 'block';
+            try {
+                const displayBooklists = filteredBooklists || booklists;
+                
+                console.log('渲染书单列表，数量:', displayBooklists.length);
+                
+                if (displayBooklists.length === 0) {
+                    emptyState.style.display = 'block';
+                    booklistGrid.innerHTML = '';
+                    booklistGrid.appendChild(emptyState);
+                    return;
+                }
+                
+                emptyState.style.display = 'none';
                 booklistGrid.innerHTML = '';
-                booklistGrid.appendChild(emptyState);
-                return;
+                
+                displayBooklists.forEach(booklist => {
+                    const booklistCard = createBooklistCard(booklist);
+                    booklistGrid.appendChild(booklistCard);
+                });
+            } catch (error) {
+                console.error('渲染书单列表时发生错误:', error);
             }
-            
-            emptyState.style.display = 'none';
-            booklistGrid.innerHTML = '';
-            
-            displayBooklists.forEach(booklist => {
-                const booklistCard = createBooklistCard(booklist);
-                booklistGrid.appendChild(booklistCard);
-            });
         }
         
         // 创建书单卡片
@@ -1599,33 +1693,37 @@
         
         // 筛选书单
         function filterBooklists() {
-            const subject = subjectFilter.value;
-            const month = monthFilter.value;
-            const searchTerm = searchInput.value.trim().toLowerCase();
-            
-            let filtered = booklists;
-            
-            // 按科目筛选
-            if (subject !== 'all') {
-                filtered = filtered.filter(booklist => booklist.subject === subject);
+            try {
+                const subject = subjectFilter.value;
+                const month = monthFilter.value;
+                const searchTerm = searchInput.value.trim().toLowerCase();
+                
+                let filtered = booklists;
+                
+                // 按科目筛选
+                if (subject !== 'all') {
+                    filtered = filtered.filter(booklist => booklist.subject === subject);
+                }
+                
+                // 按月份筛选
+                if (month !== 'all') {
+                    filtered = filtered.filter(booklist => 
+                        booklist.month.toString() === month
+                    );
+                }
+                
+                // 按创建者昵称搜索
+                if (searchTerm) {
+                    filtered = filtered.filter(booklist => 
+                        booklist.creator.toLowerCase().includes(searchTerm)
+                    );
+                }
+                
+                console.log('筛选结果数量:', filtered.length);
+                renderBooklists(filtered);
+            } catch (error) {
+                console.error('筛选书单时发生错误:', error);
             }
-            
-            // 按月份筛选
-            if (month !== 'all') {
-                filtered = filtered.filter(booklist => 
-                    booklist.month.toString() === month
-                );
-            }
-            
-            // 按创建者昵称搜索
-            if (searchTerm) {
-                filtered = filtered.filter(booklist => 
-                    booklist.creator.toLowerCase().includes(searchTerm)
-                );
-            }
-            
-            console.log('筛选结果数量:', filtered.length);
-            renderBooklists(filtered);
         }
         
         // 搜索书单
@@ -1635,18 +1733,22 @@
         
         // 格式化日期
         function formatDate(dateString, includeTime = false) {
-            const date = new Date(dateString);
-            const year = date.getFullYear();
-            const month = (date.getMonth() + 1).toString().padStart(2, '0');
-            const day = date.getDate().toString().padStart(2, '0');
-            
-            if (includeTime) {
-                const hours = date.getHours().toString().padStart(2, '0');
-                const minutes = date.getMinutes().toString().padStart(2, '0');
-                return `${year}-${month}-${day} ${hours}:${minutes}`;
+            try {
+                const date = new Date(dateString);
+                const year = date.getFullYear();
+                const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                const day = date.getDate().toString().padStart(2, '0');
+                
+                if (includeTime) {
+                    const hours = date.getHours().toString().padStart(2, '0');
+                    const minutes = date.getMinutes().toString().padStart(2, '0');
+                    return `${year}-${month}-${day} ${hours}:${minutes}`;
+                }
+                
+                return `${year}年${month}月${day}日`;
+            } catch (error) {
+                return '日期未知';
             }
-            
-            return `${year}年${month}月${day}日`;
         }
     </script>
 </body>
