@@ -8,11 +8,49 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
     <style>
+        /* 导航栏样式 - 与index.html保持一致 */
+        .navbar {
+            background-color: #4a90e2;
+            padding: 12px 0;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+        
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+        }
+        
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            font-size: 18px;
+            font-weight: 500;
+            padding: 10px 20px;
+            border-radius: 6px;
+            transition: background-color 0.3s;
+        }
+        
+        .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .nav-link.active {
+            background-color: #2c6cb0;
+        }
+        
+        .nav-link i {
+            margin-right: 8px;
+        }
+        
         /* 书单页面特定样式 */
         .booklist-container {
             max-width: 1400px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 0 20px 20px;
         }
         
         .booklist-header {
@@ -721,6 +759,15 @@
             .filter-row {
                 flex-direction: column;
             }
+            
+            .nav-container {
+                gap: 15px;
+            }
+            
+            .nav-link {
+                padding: 8px 15px;
+                font-size: 16px;
+            }
         }
         
         @media (max-width: 480px) {
@@ -740,11 +787,22 @@
                 width: 100%;
                 justify-content: center;
             }
+            
+            .nav-container {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .nav-link {
+                width: 100%;
+                text-align: center;
+                padding: 10px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container booklist-container">
+    <div class="booklist-container">
         <!-- 导航栏（与首页一致） -->
         <nav class="navbar">
             <div class="nav-container">
@@ -950,28 +1008,15 @@
         ];
         
         // DOM元素
-        const createBooklistBtn = document.getElementById('createBooklistBtn');
-        const booklistModal = document.getElementById('booklistModal');
-        const detailModal = document.getElementById('detailModal');
-        const closeModalBtn = document.getElementById('closeModalBtn');
-        const cancelBtn = document.getElementById('cancelBtn');
-        const saveBooklistBtn = document.getElementById('saveBooklistBtn');
-        const booklistForm = document.getElementById('booklistForm');
-        const booklistGrid = document.getElementById('booklistGrid');
-        const emptyState = document.getElementById('emptyState');
-        const bgSelector = document.getElementById('bgSelector');
-        const subjectFilter = document.getElementById('subjectFilter');
-        const monthFilter = document.getElementById('monthFilter');
-        const searchInput = document.getElementById('searchInput');
-        const searchBtn = document.getElementById('searchBtn');
-        const closeDetailBtn = document.getElementById('closeDetailBtn');
-        const commentInput = document.getElementById('commentInput');
-        const submitCommentBtn = document.getElementById('submitCommentBtn');
-        const commentsList = document.getElementById('commentsList');
-        const noComments = document.getElementById('noComments');
+        let createBooklistBtn, booklistModal, detailModal, closeModalBtn, cancelBtn;
+        let saveBooklistBtn, booklistForm, booklistGrid, emptyState, bgSelector;
+        let subjectFilter, monthFilter, searchInput, searchBtn, closeDetailBtn;
+        let commentInput, submitCommentBtn, commentsList, noComments;
         
         // 初始化页面
         document.addEventListener('DOMContentLoaded', function() {
+            // 初始化DOM元素引用
+            initDOMElements();
             initPage();
             renderBooklists();
             populateMonthFilter();
@@ -985,6 +1030,29 @@
                 }
             }
         });
+        
+        // 初始化DOM元素引用
+        function initDOMElements() {
+            createBooklistBtn = document.getElementById('createBooklistBtn');
+            booklistModal = document.getElementById('booklistModal');
+            detailModal = document.getElementById('detailModal');
+            closeModalBtn = document.getElementById('closeModalBtn');
+            cancelBtn = document.getElementById('cancelBtn');
+            saveBooklistBtn = document.getElementById('saveBooklistBtn');
+            booklistForm = document.getElementById('booklistForm');
+            booklistGrid = document.getElementById('booklistGrid');
+            emptyState = document.getElementById('emptyState');
+            bgSelector = document.getElementById('bgSelector');
+            subjectFilter = document.getElementById('subjectFilter');
+            monthFilter = document.getElementById('monthFilter');
+            searchInput = document.getElementById('searchInput');
+            searchBtn = document.getElementById('searchBtn');
+            closeDetailBtn = document.getElementById('closeDetailBtn');
+            commentInput = document.getElementById('commentInput');
+            submitCommentBtn = document.getElementById('submitCommentBtn');
+            commentsList = document.getElementById('commentsList');
+            noComments = document.getElementById('noComments');
+        }
         
         // 初始化页面
         function initPage() {
@@ -1027,51 +1095,62 @@
         // 设置事件监听器
         function setupEventListeners() {
             // 创建书单按钮
-            createBooklistBtn.addEventListener('click', openCreateModal);
+            if (createBooklistBtn) {
+                createBooklistBtn.addEventListener('click', openCreateModal);
+            }
             
             // 关闭模态框按钮
-            closeModalBtn.addEventListener('click', closeModal);
-            cancelBtn.addEventListener('click', closeModal);
-            closeDetailBtn.addEventListener('click', closeDetailModal);
+            if (closeModalBtn) closeModalBtn.addEventListener('click', closeModal);
+            if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+            if (closeDetailBtn) closeDetailBtn.addEventListener('click', closeDetailModal);
             
             // 保存书单按钮
-            saveBooklistBtn.addEventListener('click', saveBooklist);
+            if (saveBooklistBtn) saveBooklistBtn.addEventListener('click', saveBooklist);
             
             // 筛选和搜索
-            subjectFilter.addEventListener('change', filterBooklists);
-            monthFilter.addEventListener('change', filterBooklists);
-            searchBtn.addEventListener('click', searchBooklists);
-            searchInput.addEventListener('keyup', function(e) {
-                if (e.key === 'Enter') {
-                    searchBooklists();
-                }
-            });
+            if (subjectFilter) subjectFilter.addEventListener('change', filterBooklists);
+            if (monthFilter) monthFilter.addEventListener('change', filterBooklists);
+            if (searchBtn) searchBtn.addEventListener('click', searchBooklists);
+            if (searchInput) {
+                searchInput.addEventListener('keyup', function(e) {
+                    if (e.key === 'Enter') {
+                        searchBooklists();
+                    }
+                });
+            }
             
             // 提交评论
-            submitCommentBtn.addEventListener('click', submitComment);
+            if (submitCommentBtn) submitCommentBtn.addEventListener('click', submitComment);
             
             // 点击模态框外部关闭
-            booklistModal.addEventListener('click', function(e) {
-                if (e.target === booklistModal) {
-                    closeModal();
-                }
-            });
+            if (booklistModal) {
+                booklistModal.addEventListener('click', function(e) {
+                    if (e.target === booklistModal) {
+                        closeModal();
+                    }
+                });
+            }
             
-            detailModal.addEventListener('click', function(e) {
-                if (e.target === detailModal) {
-                    closeDetailModal();
-                }
-            });
+            if (detailModal) {
+                detailModal.addEventListener('click', function(e) {
+                    if (e.target === detailModal) {
+                        closeDetailModal();
+                    }
+                });
+            }
             
             // 表单提交
-            booklistForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                saveBooklist();
-            });
+            if (booklistForm) {
+                booklistForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    saveBooklist();
+                });
+            }
         }
         
         // 打开创建书单模态框
         function openCreateModal() {
+            console.log('打开创建书单模态框');
             document.getElementById('modalTitle').textContent = '创建书单';
             booklistForm.reset();
             document.getElementById('booklistId').value = '';
@@ -1142,7 +1221,7 @@
         // 关闭详情模态框
         function closeDetailModal() {
             detailModal.style.display = 'none';
-            commentInput.value = '';
+            if (commentInput) commentInput.value = '';
         }
         
         // 保存书单
@@ -1236,6 +1315,10 @@
                 createdAt: new Date().toISOString(),
                 replies: []
             };
+            
+            if (!booklists[booklistIndex].comments) {
+                booklists[booklistIndex].comments = [];
+            }
             
             booklists[booklistIndex].comments.push(newComment);
             localStorage.setItem('booklists', JSON.stringify(booklists));
